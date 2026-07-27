@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Methodology for the UK Stability Monitor and Collapse Index.">
+  <title>Methodology · UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .prose { width: min(calc(100% - 2rem), 820px); margin: 0 auto; padding: 5rem 0 8rem; }
+    .prose h1 { font-size: clamp(3rem, 8vw, 5.8rem); }
+    .prose h2 { margin-top: 4rem; font-size: 2rem; }
+    .prose h3 { margin-top: 2rem; }
+    .prose p, .prose li { color: #b7c2ce; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: .9rem; }
+    .prose th, .prose td { padding: .8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .prose th { background: var(--surface-2); }
+    .formula { padding: 1.2rem; border: 1px solid var(--line); background: var(--surface); font-family: ui-monospace, monospace; overflow-x: auto; }
+    .warning-box { padding: 1.2rem; border-left: 4px solid #e0a11b; background: rgba(224,161,27,.08); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/"><span class="brand-mark"><span></span><span></span><span></span></span><span><strong>UK Stability Monitor</strong><small>Open methodology</small></span></a>
+      <nav><a href="/">Dashboard</a><a href="/api/v1/methodology">Methodology API</a><a href="https://github.com/wilfgrainger/collapse-index">Source</a></nav>
+    </div>
+  </header>
+
+  <main class="prose">
+    <p class="eyebrow">Methodology version 0.1.0</p>
+    <h1>A stress index that shows its workings.</h1>
+    <p class="lede">The UK Stability Monitor is a composite measure of national systemic pressure. It is not a forecast of state failure, a political approval score or a substitute for the underlying evidence.</p>
+
+    <div class="warning-box"><strong>Prototype status.</strong> The scoring engine and disclosure model are implemented. The current seed observations remain provisional or illustrative until every value, definition and historical series is independently validated.</div>
+
+    <h2>1. Headline calculation</h2>
+    <p>Each indicator value is mapped onto a transparent 0–100 pressure scale using published piecewise-linear thresholds. The hard-data score is the weighted mean of available indicators.</p>
+    <div class="formula">base score = Σ(indicator pressure × indicator weight) ÷ Σ(available weights)</div>
+    <p>An independently reviewed qualitative event overlay may add up to 10 points. It is currently disabled in practice: the prototype includes no event that changes the score.</p>
+    <div class="formula">headline score = clamp(base score + event overlay, 0, 100)</div>
+
+    <h2>2. Levels</h2>
+    <table>
+      <thead><tr><th>Score</th><th>Level</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>0–24</td><td>Stable</td><td>Broad systems functioning within normal pressure ranges.</td></tr>
+        <tr><td>25–39</td><td>Guarded</td><td>Several elevated pressures, with resilience intact.</td></tr>
+        <tr><td>40–54</td><td>Strained</td><td>Multiple pressures materially above healthy baselines.</td></tr>
+        <tr><td>55–69</td><td>Severe</td><td>High pressure and visible erosion of resilience.</td></tr>
+        <tr><td>70–84</td><td>Critical</td><td>Acute, mutually reinforcing strain across systems.</td></tr>
+        <tr><td>85–100</td><td>Emergency</td><td>Exceptional, widespread disruption and serious systemic risk.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. Indicator weights</h2>
+    <table>
+      <thead><tr><th>Indicator</th><th>Weight</th><th>Primary measure</th></tr></thead>
+      <tbody>
+        <tr><td>Economic growth</td><td>14%</td><td>Real GDP per person, annual growth</td></tr>
+        <tr><td>Inflation and living costs</td><td>11%</td><td>CPI annual inflation</td></tr>
+        <tr><td>Employment pressure</td><td>11%</td><td>Unemployment rate</td></tr>
+        <tr><td>Poverty and inequality</td><td>10%</td><td>Child relative poverty after housing costs</td></tr>
+        <tr><td>Housing stress</td><td>10%</td><td>Private rent as a share of income</td></tr>
+        <tr><td>Trust and governance</td><td>10%</td><td>Trust in national government</td></tr>
+        <tr><td>Social and industrial unrest</td><td>9%</td><td>Working days lost per 1,000 employees</td></tr>
+        <tr><td>Basic-needs hardship</td><td>9%</td><td>Emergency food parcels per 1,000 people</td></tr>
+        <tr><td>Healthcare strain</td><td>11%</td><td>Elective waiting pathways per 1,000 people</td></tr>
+        <tr><td>Environmental disruption</td><td>5%</td><td>Transparent severe-weather disruption signal</td></tr>
+      </tbody>
+    </table>
+
+    <h2>4. Freshness and confidence</h2>
+    <p>The site may recalculate daily, but it never relabels an old statistic as today's figure. Every observation carries its actual reference date, publication date, source and verification status.</p>
+    <p>Confidence combines source confidence and freshness against the indicator's expected release cadence. Stale data does not automatically reduce or increase the stress score; it reduces confidence in the headline.</p>
+
+    <h2>5. Event overlay</h2>
+    <p>News events are not sentiment-scored automatically. To affect the index, an event must have a named source, occurrence time, severity, confidence, decay half-life and an approved review state. Each event contributes at most two points before decay, and the total overlay is capped at ten.</p>
+    <div class="formula">event effect = (severity ÷ 5) × 2 × evidence confidence × 0.5^(age ÷ half-life)</div>
+
+    <h2>6. Historical chart</h2>
+    <p>The first-release history is explicitly labelled an illustrative backcast. It exists to test the interface. It must not be presented as calculated evidence until all ten source series have been acquired, transformed with the same versioned method and independently checked.</p>
+
+    <h2>7. Change control</h2>
+    <p>Any change to indicator definitions, weights, thresholds, event rules or missing-data handling requires a methodology version change, test updates and a published impact note. Historical values should be regenerated under the new method while the prior series remains reproducible.</p>
+
+    <h2>8. What this index must never claim</h2>
+    <ul>
+      <li>That a particular score proves the UK is about to collapse.</li>
+      <li>That daily publication means every input is daily.</li>
+      <li>That one news story or social-media trend represents the country.</li>
+      <li>That correlation identifies political or institutional causation.</li>
+      <li>That uncertainty can be hidden behind a precise-looking number.</li>
+    </ul>
+  </main>
+
+  <footer class="site-footer"><div class="shell footer-inner"><div><strong>UK Stability Monitor</strong><p>Methodology first. Drama last.</p></div><div class="footer-links"><a href="/">Dashboard</a><a href="/api/v1/openapi.json">API</a></div></div></footer>
+</body>
+</html>

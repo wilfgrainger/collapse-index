@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A transparent UK national stability and systemic stress monitor built from public evidence.">
+  <meta name="theme-color" content="#0c1522">
+  <title>UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Collapse Index · methodology prototype</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#drivers">Drivers</a>
+        <a href="#history">History</a>
+        <a href="/methodology.html">Methodology</a>
+        <a href="/api/v1/index">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">National systemic pressure · updated daily</p>
+        <h1 id="hero-title">How much strain is the UK under?</h1>
+        <p class="lede">A single, inspectable score combining economic, social, institutional, health and environmental pressure. Higher means more strain—not a prediction that Britain will collapse.</p>
+        <div class="prototype-notice" id="prototype-notice" role="status">
+          <strong>Prototype data.</strong> The calculation works; several seed observations still require independent source verification before editorial launch.
+        </div>
+      </div>
+
+      <div class="score-panel" aria-live="polite">
+        <div class="score-ring" id="score-ring" style="--score: 0; --level-colour: #8a96a8">
+          <div class="score-ring-inner">
+            <span class="score-label">Stress score</span>
+            <strong id="score-value">—</strong>
+            <span class="score-scale">out of 100</span>
+          </div>
+        </div>
+        <div class="score-summary">
+          <div>
+            <span class="status-dot" id="status-dot"></span>
+            <strong id="level-label">Loading…</strong>
+          </div>
+          <p id="level-summary">Calculating the latest available evidence.</p>
+          <dl>
+            <div><dt>Confidence</dt><dd id="confidence-value">—</dd></div>
+            <div><dt>Hard-data score</dt><dd id="base-score">—</dd></div>
+            <div><dt>Event overlay</dt><dd id="event-overlay">—</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="signal-strip" aria-label="Index interpretation">
+      <div class="shell signal-grid">
+        <div><span class="signal stable"></span><strong>0–24</strong><small>Stable</small></div>
+        <div><span class="signal guarded"></span><strong>25–39</strong><small>Guarded</small></div>
+        <div><span class="signal strained"></span><strong>40–54</strong><small>Strained</small></div>
+        <div><span class="signal severe"></span><strong>55–69</strong><small>Severe</small></div>
+        <div><span class="signal critical"></span><strong>70–84</strong><small>Critical</small></div>
+        <div><span class="signal emergency"></span><strong>85–100</strong><small>Emergency</small></div>
+      </div>
+    </section>
+
+    <section class="section shell" id="drivers" aria-labelledby="drivers-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">What is moving the score</p>
+          <h2 id="drivers-title">Ten pressure indicators</h2>
+        </div>
+        <p>Each indicator keeps its true observation date. Old data lowers confidence instead of pretending to be current.</p>
+      </div>
+      <div class="indicator-grid" id="indicator-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="section history-section" id="history" aria-labelledby="history-title">
+      <div class="shell">
+        <div class="section-heading inverse">
+          <div>
+            <p class="eyebrow">Longer view</p>
+            <h2 id="history-title">Pressure over time</h2>
+          </div>
+          <p id="history-warning">Loading historical context…</p>
+        </div>
+        <div class="chart-card">
+          <div class="chart-meta">
+            <span>0 · low pressure</span>
+            <span>100 · exceptional pressure</span>
+          </div>
+          <div class="chart-wrap" id="history-chart" role="img" aria-label="UK stability stress score over time"></div>
+          <div class="chart-events" aria-hidden="true">
+            <span style="left: 18%">Covid</span>
+            <span style="left: 56%">Energy shock</span>
+            <span style="left: 86%">Current</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell evidence-grid" aria-labelledby="evidence-title">
+      <article class="evidence-card">
+        <p class="eyebrow">Recent evidence</p>
+        <h2 id="evidence-title">Events and signals</h2>
+        <div id="event-list" class="event-list"></div>
+      </article>
+
+      <article class="method-card">
+        <p class="eyebrow">Methodology guardrails</p>
+        <h2>Designed to resist sensationalism</h2>
+        <ul>
+          <li>Hard data and qualitative events are separated.</li>
+          <li>Event effects are reviewed, disclosed, capped and decay over time.</li>
+          <li>Missing data reduces confidence rather than being quietly invented.</li>
+          <li>Every scoring threshold is public and versioned.</li>
+        </ul>
+        <a class="button" href="/methodology.html">Read the methodology</a>
+      </article>
+    </section>
+
+    <section class="section shell data-quality" aria-labelledby="quality-title">
+      <div>
+        <p class="eyebrow">Evidence quality</p>
+        <h2 id="quality-title">The confidence score matters as much as the headline</h2>
+      </div>
+      <div class="quality-stats">
+        <div><strong id="available-count">—</strong><span>indicators available</span></div>
+        <div><strong id="stale-count">—</strong><span>stale indicators</span></div>
+        <div><strong id="generated-at">—</strong><span>calculated</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>An open methodology experiment in public-interest data communication.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/methodology.html">Methodology</a>
+        <a href="/api/v1/openapi.json">OpenAPI</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
+      </div>
+    </div>
+  </footer>
+
+  <noscript>This dashboard requires JavaScript to calculate and display the index breakdown. The API remains available at /api/v1/index.</noscript>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "uk-collapse-index",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-27",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "DATA_MODE": "d1"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "uk-collapse-index",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "triggers": {
+    "crons": ["15 5 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

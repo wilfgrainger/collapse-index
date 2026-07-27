@@ -1,0 +1,10 @@
+{
+  "name": "UK Stability Monitor",
+  "short_name": "UK Stability",
+  "description": "Transparent UK systemic-pressure index.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08111c",
+  "theme_color": "#0c1522",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
