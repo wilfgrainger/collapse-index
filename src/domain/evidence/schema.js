@@ -156,7 +156,6 @@ export function isHeadlineEligibleObservation(observation) {
   if (!observation) return false;
   if (!isHeadlineEligibleState(observation.state)) return false;
   if (!SHA256_HEX.test(observation.evidenceSha256 ?? "")) return false;
-  if (!isNonEmptyString(observation.dependencyFingerprint)) return false;
   return isFiniteNumber(observation.rawValue) && isFiniteNumber(observation.transformedValue);
 }
 
