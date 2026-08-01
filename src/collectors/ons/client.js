@@ -124,6 +124,12 @@ export async function fetchSourcePayload(rawUrl, options = {}) {
         signal: controller.signal
       });
 
+      // 304 is a successful conditional-request outcome, not a redirect. It
+      // deliberately has no Location header and must be handled first.
+      if (response.status === 304) {
+        return { notModified: true, retrievedAt, finalUrl: current };
+      }
+
       if (response.status >= 300 && response.status < 400) {
         if (hop === CLIENT_LIMITS.maxRedirects) {
           throw new CollectorError(FAILURE_CLASS.TRANSPORT, "too many redirects", { url: current });
@@ -134,10 +140,6 @@ export async function fetchSourcePayload(rawUrl, options = {}) {
         }
         current = assertAllowedUrl(new URL(location, current).href).href;
         continue;
-      }
-
-      if (response.status === 304) {
-        return { notModified: true, retrievedAt, finalUrl: current };
       }
 
       if (!response.ok) {
