@@ -1,11 +1,9 @@
 /**
- * Canonical evidence shapes and runtime validation (WP1).
+ * Canonical evidence shapes and runtime validation.
  *
- * Validation here is deliberately strict and dependency-free. The rule the
- * whole product rests on is encoded in `validateObservation`: an observation
- * cannot exist without exact source identity, an explicit reference period and
- * an evidence hash. Anything less is rejected rather than downgraded, because a
- * silently weakened observation is worse than a missing one.
+ * Validation rejects incomplete provenance rather than coercing or silently
+ * degrading it. Derived observations must identify every payload involved in
+ * the calculation, not only their primary source.
  */
 
 import {
@@ -18,7 +16,7 @@ import {
 import { FREQUENCY } from "../../shared/period.js";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/;
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T[\d:.+-]+Z$/;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 const FREQUENCIES = Object.values(FREQUENCY);
 
@@ -58,9 +56,6 @@ function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-/**
- * Validates a source declaration — the static identity of an upstream series.
- */
 export function validateSource(source) {
   const v = new Validator("source");
   v.require(isNonEmptyString(source?.id), "source.id", "source id is required");
@@ -88,9 +83,6 @@ export function validateSource(source) {
   return v.result(source);
 }
 
-/**
- * Validates an archived evidence object: the bytes an observation came from.
- */
 export function validateEvidenceObject(evidence) {
   const v = new Validator("evidence_object");
   v.require(isNonEmptyString(evidence?.key), "evidence.key", "object key is required");
@@ -102,23 +94,16 @@ export function validateEvidenceObject(evidence) {
   return v.result(evidence);
 }
 
-/**
- * Validates a canonical observation.
- *
- * Rejection, not coercion, is the point of this function.
- */
 export function validateObservation(observation) {
   const v = new Validator("observation");
 
   v.require(isNonEmptyString(observation?.indicatorId), "observation.indicatorId", "indicator id is required");
   v.require(isNonEmptyString(observation?.sourceId), "observation.sourceId", "source id is required");
   v.require(isNonEmptyString(observation?.cdid), "observation.cdid", "exact series identifier is required");
-
-  // A blank source cell is not zero. `null` is a legal raw value only when the
-  // observation is explicitly recorded as unavailable rather than measured.
-  const hasValue = isFiniteNumber(observation?.rawValue);
-  v.require(hasValue, "observation.rawValue", "raw value must be a finite number; blanks must not be coerced to zero");
-
+  v.require(isNonEmptyString(observation?.datasetId), "observation.datasetId", "dataset identifier is required");
+  v.require(isFiniteNumber(observation?.rawValue), "observation.rawValue", "raw value must be finite; blanks must not be coerced to zero");
+  v.require(isFiniteNumber(observation?.transformedValue), "observation.transformedValue", "transformed value must be finite");
+  v.require(isNonEmptyString(observation?.rawUnit), "observation.rawUnit", "raw unit is required");
   v.require(isNonEmptyString(observation?.unit), "observation.unit", "unit is required");
   v.require(
     FREQUENCIES.includes(observation?.frequency),
@@ -134,22 +119,15 @@ export function validateObservation(observation) {
   v.require(ISO_DATE.test(observation?.periodStart ?? ""), "observation.periodStart", "reference period start is required");
   v.require(ISO_DATE.test(observation?.periodEnd ?? ""), "observation.periodEnd", "reference period end is required");
   if (ISO_DATE.test(observation?.periodStart ?? "") && ISO_DATE.test(observation?.periodEnd ?? "")) {
-    v.require(
-      observation.periodStart <= observation.periodEnd,
-      "observation.period",
-      "reference period start must not follow its end"
-    );
+    v.require(observation.periodStart <= observation.periodEnd, "observation.period", "reference period start must not follow its end");
   }
 
   v.require(ISO_TIMESTAMP.test(observation?.publishedAt ?? ""), "observation.publishedAt", "source publication timestamp is required");
   v.require(ISO_TIMESTAMP.test(observation?.retrievedAt ?? ""), "observation.retrievedAt", "retrieval timestamp is required");
   v.require(isNonEmptyString(observation?.sourceUrl), "observation.sourceUrl", "source url is required");
   v.require(isNonEmptyString(observation?.licence), "observation.licence", "licence is required");
-  v.require(
-    SHA256_HEX.test(observation?.evidenceSha256 ?? ""),
-    "observation.evidenceSha256",
-    "an observation cannot exist without the hash of the evidence it came from"
-  );
+  v.require(SHA256_HEX.test(observation?.evidenceSha256 ?? ""), "observation.evidenceSha256", "primary evidence hash is required");
+  v.require(isNonEmptyString(observation?.dependencyFingerprint), "observation.dependencyFingerprint", "dependency fingerprint is required");
   v.require(isNonEmptyString(observation?.parserVersion), "observation.parserVersion", "parser version is required");
   v.require(
     EVIDENCE_STATES.includes(observation?.state),
@@ -157,7 +135,16 @@ export function validateObservation(observation) {
     `state must be one of ${EVIDENCE_STATES.join(", ")}`
   );
 
-  // An illustrative observation is legal, but it must never claim verification.
+  if (observation?.denominator !== null && observation?.denominator !== undefined) {
+    const denominator = observation.denominator;
+    v.require(isNonEmptyString(denominator?.sourceId), "observation.denominator.sourceId", "denominator source id is required");
+    v.require(isNonEmptyString(denominator?.cdid), "observation.denominator.cdid", "denominator cdid is required");
+    v.require(isFiniteNumber(denominator?.value), "observation.denominator.value", "denominator value must be finite");
+    v.require(SHA256_HEX.test(denominator?.evidenceSha256 ?? ""), "observation.denominator.evidenceSha256", "denominator evidence hash is required");
+    v.require(ISO_DATE.test(denominator?.periodStart ?? ""), "observation.denominator.periodStart", "denominator period start is required");
+    v.require(ISO_DATE.test(denominator?.periodEnd ?? ""), "observation.denominator.periodEnd", "denominator period end is required");
+  }
+
   if (observation?.state === EVIDENCE_STATE.ILLUSTRATIVE) {
     v.warn(false, "observation.illustrative", "illustrative evidence cannot contribute to a verified headline");
   }
@@ -165,26 +152,41 @@ export function validateObservation(observation) {
   return v.result(observation);
 }
 
-/**
- * Guards headline eligibility at the point of use.
- *
- * Called by the scoring layer so that an illustrative or withdrawn observation
- * cannot reach a verified score even if it passed structural validation.
- */
 export function isHeadlineEligibleObservation(observation) {
   if (!observation) return false;
   if (!isHeadlineEligibleState(observation.state)) return false;
   if (!SHA256_HEX.test(observation.evidenceSha256 ?? "")) return false;
-  return isFiniteNumber(observation.rawValue);
+  if (!isNonEmptyString(observation.dependencyFingerprint)) return false;
+  return isFiniteNumber(observation.rawValue) && isFiniteNumber(observation.transformedValue);
 }
 
-/** Validates a materialised snapshot before it is written or served. */
+/** Validates the actual schema-v2 materialised snapshot shape. */
 export function validateSnapshot(snapshot) {
   const v = new Validator("snapshot");
+  v.require(snapshot?.schemaVersion === "2.0", "snapshot.schemaVersion", "schema version 2.0 is required");
   v.require(isNonEmptyString(snapshot?.methodologyVersion), "snapshot.methodologyVersion", "methodology version is required");
+  v.require(ISO_TIMESTAMP.test(snapshot?.asOf ?? ""), "snapshot.asOf", "asOf must be an ISO timestamp");
   v.require(ISO_TIMESTAMP.test(snapshot?.generatedAt ?? ""), "snapshot.generatedAt", "generatedAt must be an ISO timestamp");
-  v.require(isFiniteNumber(snapshot?.structuralScore), "snapshot.structuralScore", "structural score is required");
-  v.require(isFiniteNumber(snapshot?.confidence), "snapshot.confidence", "confidence is required");
-  v.require(Array.isArray(snapshot?.components), "snapshot.components", "component lineage is required");
+  v.require(["published", "suppressed"].includes(snapshot?.publication?.status), "snapshot.publication.status", "publication status is invalid");
+  v.require(isFiniteNumber(snapshot?.structural?.observedPressure), "snapshot.structural.observedPressure", "observed pressure is required");
+  v.require(isFiniteNumber(snapshot?.structural?.availableWeight), "snapshot.structural.availableWeight", "available weight is required");
+  v.require(isFiniteNumber(snapshot?.structural?.missingWeight), "snapshot.structural.missingWeight", "missing weight is required");
+  v.require(isFiniteNumber(snapshot?.structural?.range?.low), "snapshot.structural.range.low", "range low is required");
+  v.require(isFiniteNumber(snapshot?.structural?.range?.high), "snapshot.structural.range.high", "range high is required");
+  v.require(isFiniteNumber(snapshot?.acute?.overlay), "snapshot.acute.overlay", "acute overlay is required");
+  v.require(isFiniteNumber(snapshot?.confidence?.score), "snapshot.confidence.score", "confidence score is required");
+  v.require(Array.isArray(snapshot?.indicators) && snapshot.indicators.length > 0, "snapshot.indicators", "indicator components are required");
+
+  for (const [index, indicator] of (snapshot?.indicators ?? []).entries()) {
+    v.require(isNonEmptyString(indicator?.id), `snapshot.indicators.${index}.id`, "indicator id is required");
+    v.require(typeof indicator?.available === "boolean", `snapshot.indicators.${index}.available`, "indicator availability must be boolean");
+    v.require(isFiniteNumber(indicator?.weight), `snapshot.indicators.${index}.weight`, "indicator weight is required");
+    if (indicator?.available) {
+      v.require(isFiniteNumber(indicator?.pressure), `snapshot.indicators.${index}.pressure`, "available indicator pressure is required");
+      v.require(SHA256_HEX.test(indicator?.source?.evidenceSha256 ?? ""), `snapshot.indicators.${index}.source.evidenceSha256`, "available indicator evidence hash is required");
+      v.require(isNonEmptyString(indicator?.source?.dependencyFingerprint), `snapshot.indicators.${index}.source.dependencyFingerprint`, "available indicator dependency fingerprint is required");
+    }
+  }
+
   return v.result(snapshot);
 }
