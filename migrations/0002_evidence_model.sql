@@ -1,31 +1,10 @@
--- Migration 0002 — evidence model v2 (WP2)
---
--- Replaces the v0.1 prototype tables with an immutable, auditable evidence
--- model. The prototype tables held only hand-entered concept-brief values
--- explicitly marked provisional or illustrative, which ROADMAP.md release 0.2
--- requires removing from headline eligibility. No production D1 database
--- existed at the time of this migration (wrangler.jsonc bound no d1_databases),
--- so nothing observed is lost.
---
--- Design rules encoded here:
---   * observations are append-only; a revision inserts a new row and points at
---     the row it supersedes
---   * an observation cannot exist without the evidence object it came from
---   * a snapshot records the exact observation version behind every component
-
+-- Migration 0002 — evidence model v2
 PRAGMA foreign_keys = ON;
 
--- All four v0.1 tables are dropped, not just the obviously incompatible ones.
--- `ingestion_runs` matters especially: 0001 created it with a different shape,
--- and the CREATE ... IF NOT EXISTS below would silently keep the old columns.
 DROP TABLE IF EXISTS observations;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS snapshots;
 DROP TABLE IF EXISTS ingestion_runs;
-
--- ---------------------------------------------------------------------------
--- Source identity
--- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS sources (
   id TEXT PRIMARY KEY,
@@ -48,16 +27,8 @@ CREATE TABLE IF NOT EXISTS sources (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS idx_sources_series ON sources (cdid, dataset_id);
 
--- ---------------------------------------------------------------------------
--- Archived evidence
--- ---------------------------------------------------------------------------
-
--- One row per distinct payload. The hash is the identity: an unchanged source
--- re-fetched tomorrow maps to the same row, which is what makes a repeated run
--- idempotent and stops the R2 archive growing without new information.
 CREATE TABLE IF NOT EXISTS evidence_objects (
   sha256 TEXT PRIMARY KEY CHECK (length(sha256) = 64),
   object_key TEXT NOT NULL,
@@ -72,10 +43,8 @@ CREATE TABLE IF NOT EXISTS evidence_objects (
   archived INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE INDEX IF NOT EXISTS idx_evidence_source ON evidence_objects (source_id, retrieved_at DESC);
 
--- Release discovery: what the source said about itself on each retrieval.
 CREATE TABLE IF NOT EXISTS source_releases (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   source_id TEXT NOT NULL REFERENCES sources(id),
@@ -89,12 +58,7 @@ CREATE TABLE IF NOT EXISTS source_releases (
   discovered_at TEXT NOT NULL,
   UNIQUE (source_id, published_at, evidence_sha256)
 );
-
 CREATE INDEX IF NOT EXISTS idx_source_releases_source ON source_releases (source_id, published_at DESC);
-
--- ---------------------------------------------------------------------------
--- Observations (append-only)
--- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS observations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,50 +66,36 @@ CREATE TABLE IF NOT EXISTS observations (
   source_id TEXT NOT NULL REFERENCES sources(id),
   cdid TEXT NOT NULL,
   dataset_id TEXT NOT NULL,
-
   raw_value REAL NOT NULL,
   raw_unit TEXT NOT NULL,
   transformed_value REAL NOT NULL,
   unit TEXT NOT NULL,
-
   frequency TEXT NOT NULL,
   geography TEXT NOT NULL,
   seasonal_adjustment TEXT,
-
   period_start TEXT NOT NULL,
   period_end TEXT NOT NULL,
   period_label TEXT NOT NULL,
-
   published_at TEXT NOT NULL,
   expected_next_release TEXT,
   retrieved_at TEXT NOT NULL,
-
   source_url TEXT NOT NULL,
   licence TEXT NOT NULL,
   evidence_sha256 TEXT NOT NULL REFERENCES evidence_objects(sha256),
+  dependency_fingerprint TEXT NOT NULL,
   parser_version TEXT NOT NULL,
-
   state TEXT NOT NULL CHECK (state IN ('illustrative', 'provisional', 'verified', 'revised', 'withdrawn', 'suppressed')),
   notes TEXT,
   denominator_json TEXT,
   supersedes_id INTEGER REFERENCES observations(id),
-
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   CHECK (period_start <= period_end),
-
-  -- Idempotency: the same evidence describing the same period is one fact.
-  UNIQUE (source_id, period_end, evidence_sha256)
+  UNIQUE (source_id, period_end, dependency_fingerprint)
 );
-
--- Serves "latest verified observation per indicator" as a bounded index scan.
 CREATE INDEX IF NOT EXISTS idx_observations_latest ON observations (indicator_id, id DESC);
 CREATE INDEX IF NOT EXISTS idx_observations_history ON observations (indicator_id, period_end DESC);
 CREATE INDEX IF NOT EXISTS idx_observations_evidence ON observations (evidence_sha256);
-
--- ---------------------------------------------------------------------------
--- Acute events (schema only; release 0.4 implements the review workflow)
--- ---------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_observations_dependencies ON observations (dependency_fingerprint);
 
 CREATE TABLE IF NOT EXISTS events (
   id TEXT PRIMARY KEY,
@@ -164,10 +114,8 @@ CREATE TABLE IF NOT EXISTS events (
   reviewed_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE INDEX IF NOT EXISTS idx_events_active ON events (review_status, occurred_at DESC);
 
--- Every review decision is retained, including rejections.
 CREATE TABLE IF NOT EXISTS event_reviews (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id TEXT NOT NULL REFERENCES events(id),
@@ -177,10 +125,6 @@ CREATE TABLE IF NOT EXISTS event_reviews (
   corroborating_sources_json TEXT NOT NULL,
   decided_at TEXT NOT NULL
 );
-
--- ---------------------------------------------------------------------------
--- Snapshots and lineage
--- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -197,19 +141,20 @@ CREATE TABLE IF NOT EXISTS snapshots (
   acute_overlay REAL NOT NULL DEFAULT 0,
   confidence REAL NOT NULL,
   evidence_fingerprint TEXT NOT NULL,
+  state_fingerprint TEXT NOT NULL,
   payload_json TEXT NOT NULL,
   generated_at TEXT NOT NULL,
-  UNIQUE (as_of_date, methodology_version)
+  UNIQUE (as_of_date, methodology_version, state_fingerprint)
 );
+CREATE INDEX IF NOT EXISTS idx_snapshots_date ON snapshots (as_of_date DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_snapshots_evidence ON snapshots (evidence_fingerprint);
+CREATE INDEX IF NOT EXISTS idx_snapshots_state ON snapshots (state_fingerprint);
 
-CREATE INDEX IF NOT EXISTS idx_snapshots_date ON snapshots (as_of_date DESC);
-CREATE INDEX IF NOT EXISTS idx_snapshots_fingerprint ON snapshots (evidence_fingerprint);
-
--- Exactly which observation version stood behind each component.
 CREATE TABLE IF NOT EXISTS snapshot_components (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
   indicator_id TEXT NOT NULL,
   observation_id INTEGER REFERENCES observations(id),
+  dependency_fingerprint TEXT,
   weight REAL NOT NULL,
   pressure REAL,
   contribution REAL NOT NULL DEFAULT 0,
@@ -218,10 +163,6 @@ CREATE TABLE IF NOT EXISTS snapshot_components (
   unavailable_reason TEXT,
   PRIMARY KEY (snapshot_id, indicator_id)
 );
-
--- ---------------------------------------------------------------------------
--- Operational audit
--- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS ingestion_runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -236,7 +177,6 @@ CREATE TABLE IF NOT EXISTS ingestion_runs (
   snapshot_id INTEGER REFERENCES snapshots(id),
   summary_json TEXT
 );
-
 CREATE INDEX IF NOT EXISTS idx_ingestion_runs_started ON ingestion_runs (started_at DESC);
 
 CREATE TABLE IF NOT EXISTS collector_results (
@@ -252,7 +192,6 @@ CREATE TABLE IF NOT EXISTS collector_results (
   duration_ms INTEGER,
   recorded_at TEXT NOT NULL
 );
-
 CREATE INDEX IF NOT EXISTS idx_collector_results_source ON collector_results (source_id, recorded_at DESC);
 
 CREATE TABLE IF NOT EXISTS validation_results (
@@ -265,7 +204,6 @@ CREATE TABLE IF NOT EXISTS validation_results (
   warnings_json TEXT,
   recorded_at TEXT NOT NULL
 );
-
 CREATE INDEX IF NOT EXISTS idx_validation_results_source ON validation_results (source_id, recorded_at DESC);
 
 CREATE TABLE IF NOT EXISTS methodology_versions (
