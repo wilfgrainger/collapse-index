@@ -14,6 +14,7 @@ import { dateInTimeZone, daysBetween } from "../shared/period.js";
 import * as repo from "../storage/d1/repository.js";
 
 const API_PREFIX = "/api/v1";
+const MAX_SNAPSHOT_AGE_DAYS = 2;
 
 const SECURITY_HEADERS = Object.freeze({
   "Content-Security-Policy":
@@ -33,6 +34,16 @@ const CACHE = Object.freeze({
   health: "public, max-age=60, s-maxage=60",
   none: "no-store"
 });
+
+function runtimeNow(env) {
+  return env?.CLOCK_NOW ?? new Date().toISOString();
+}
+
+function snapshotAgeDays(asOfDate, now) {
+  const today = dateInTimeZone(now);
+  const age = daysBetween(asOfDate, today);
+  return Number.isFinite(age) ? Math.max(0, age) : null;
+}
 
 function json(payload, { status = 200, cacheControl = CACHE.current, etag = null, extraHeaders = {} } = {}) {
   const headers = new Headers({
@@ -74,25 +85,34 @@ async function resolveCurrent(env) {
       if (!latest) {
         return {
           snapshot: null,
-          provenance: { store: "d1", kind: "degraded", reason: "database is bound but contains no materialised snapshot" }
+          provenance: { store: "d1", kind: "degraded", operationalStatus: "degraded", reason: "database is bound but contains no materialised snapshot" }
         };
       }
+
+      const ageDays = snapshotAgeDays(latest.asOfDate, runtimeNow(env));
+      const operationalStatus = ageDays !== null && ageDays > MAX_SNAPSHOT_AGE_DAYS ? "stale" : "current";
       return {
         snapshot: latest.snapshot,
         provenance: {
           store: "d1",
           kind: "materialised-snapshot",
+          operationalStatus,
           generatedAt: latest.generatedAt,
           asOfDate: latest.asOfDate,
+          ageDays,
+          maxAgeDays: MAX_SNAPSHOT_AGE_DAYS,
           evidenceFingerprint: latest.fingerprint,
-          stateFingerprint: latest.stateFingerprint
+          stateFingerprint: latest.stateFingerprint,
+          ...(operationalStatus === "stale"
+            ? { warning: `The latest daily materialisation is ${ageDays} days old.` }
+            : {})
         }
       };
     } catch (error) {
       console.error("snapshot read failed", error?.message);
       return {
         snapshot: null,
-        provenance: { store: "d1", kind: "degraded", reason: "database read failed" }
+        provenance: { store: "d1", kind: "degraded", operationalStatus: "degraded", reason: "database read failed" }
       };
     }
   }
@@ -105,6 +125,7 @@ async function resolveCurrent(env) {
         provenance: {
           store: "bundled-fixture-capture",
           kind: "frozen-capture",
+          operationalStatus: "bootstrap",
           generatedAt: bootstrap.snapshot?.generatedAt ?? null,
           capturedAt: bootstrap.capturedAt ?? null,
           note: "Explicit bootstrap mode is enabled. This response comes from committed ONS payload fixtures rather than live ingestion."
@@ -118,6 +139,7 @@ async function resolveCurrent(env) {
     provenance: {
       store: "none",
       kind: "unavailable",
+      operationalStatus: "degraded",
       reason: "no database is bound and bootstrap mode is disabled"
     }
   };
@@ -220,7 +242,7 @@ async function evidenceHealthDocument(env) {
       base.recentRuns = await repo.recentRuns(env, 10);
     } catch (error) {
       console.error("evidence health read failed", error?.message);
-      base.provenance = { store: "d1", kind: "degraded", reason: "evidence health read failed" };
+      base.provenance = { store: "d1", kind: "degraded", operationalStatus: "degraded", reason: "evidence health read failed" };
     }
   }
 
@@ -232,7 +254,7 @@ function openApiDocument(origin) {
     get: {
       summary,
       ...(options.deprecated ? { deprecated: true } : {}),
-      responses: { 200: { description: summary }, 503: { description: "Evidence store unavailable" } }
+      responses: { 200: { description: summary }, 503: { description: "Evidence store unavailable or stale" } }
     }
   });
   return {
@@ -270,7 +292,7 @@ async function healthDocument(env) {
     },
     snapshot: null,
     latestRun: null,
-    timestamp: new Date().toISOString()
+    timestamp: runtimeNow(env)
   };
 
   if (repo.hasDatabase(env)) {
@@ -283,12 +305,18 @@ async function healthDocument(env) {
         result.status = "degraded";
         result.reason = "database is readable but no snapshot exists";
       } else {
-        const today = dateInTimeZone(result.timestamp);
+        const ageDays = snapshotAgeDays(latest.asOfDate, result.timestamp);
         result.snapshot = {
           asOfDate: latest.asOfDate,
           generatedAt: latest.generatedAt,
-          ageDays: daysBetween(latest.asOfDate, today)
+          ageDays,
+          maxAgeDays: MAX_SNAPSHOT_AGE_DAYS
         };
+        if (ageDays !== null && ageDays > MAX_SNAPSHOT_AGE_DAYS) {
+          result.ok = false;
+          result.status = "degraded";
+          result.reason = `latest daily materialisation is ${ageDays} days old`;
+        }
       }
       if (result.latestRun?.status === "failed") {
         result.ok = false;
@@ -315,29 +343,35 @@ async function healthDocument(env) {
   return result;
 }
 
+function currentExtraHeaders(provenance, compatibility) {
+  const headers = {};
+  if (compatibility) {
+    headers.Deprecation = "true";
+    headers.Link = `</api/v1/current>; rel="successor-version"`;
+  }
+  if (provenance?.operationalStatus === "stale") {
+    headers.Warning = `110 - "Snapshot is ${provenance.ageDays} days old"`;
+    headers["X-Snapshot-Age-Days"] = String(provenance.ageDays);
+  }
+  return headers;
+}
+
 async function handleCurrent(request, env, compatibility = false) {
   const { snapshot, provenance } = await resolveCurrent(env);
+  const extraHeaders = currentExtraHeaders(provenance, compatibility);
   if (!snapshot) {
     return json({ error: "evidence_store_unavailable", provenance }, {
       status: 503,
       cacheControl: CACHE.none,
-      extraHeaders: compatibility ? { Deprecation: "true", Link: `</api/v1/current>; rel="successor-version"` } : {}
+      extraHeaders
     });
   }
   const etag = `"${provenance.stateFingerprint ?? provenance.evidenceFingerprint ?? snapshot.generatedAt}-${METHODOLOGY_VERSION}"`;
   if (request.headers.get("if-none-match") === etag) {
-    const headers = new Headers({ ETag: etag, "Cache-Control": CACHE.current, ...SECURITY_HEADERS });
-    if (compatibility) {
-      headers.set("Deprecation", "true");
-      headers.set("Link", `</api/v1/current>; rel="successor-version"`);
-    }
+    const headers = new Headers({ ETag: etag, "Cache-Control": CACHE.current, ...SECURITY_HEADERS, ...extraHeaders });
     return new Response(null, { status: 304, headers });
   }
-  return json({ ...snapshot, provenance }, {
-    cacheControl: CACHE.current,
-    etag,
-    extraHeaders: compatibility ? { Deprecation: "true", Link: `</api/v1/current>; rel="successor-version"` } : {}
-  });
+  return json({ ...snapshot, provenance }, { cacheControl: CACHE.current, etag, extraHeaders });
 }
 
 async function handleApi(request, env) {
@@ -412,12 +446,12 @@ async function handleApi(request, env) {
       }
     }
 
-    return json({ definition, current, history, provenance }, { cacheControl: CACHE.current });
+    return json({ definition, current, history, provenance }, { cacheControl: CACHE.current, extraHeaders: currentExtraHeaders(provenance, false) });
   }
 
   if (pathname === `${API_PREFIX}/evidence-health`) {
     const document = await evidenceHealthDocument(env);
-    const degraded = document.provenance?.kind === "degraded";
+    const degraded = document.provenance?.operationalStatus === "degraded" || document.provenance?.operationalStatus === "stale";
     return json(document, { status: degraded ? 503 : 200, cacheControl: degraded ? CACHE.none : CACHE.health });
   }
   if (pathname === `${API_PREFIX}/methodology`) return json(methodologyDocument(), { cacheControl: CACHE.methodology });
