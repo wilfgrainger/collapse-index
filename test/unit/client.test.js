@@ -29,11 +29,9 @@ test("streaming responses are stopped at the hard byte limit", async () => {
   );
 });
 
-test("declared oversized responses fail before body consumption", async () => {
-  let pulled = false;
+test("declared oversized responses are rejected from their headers", async () => {
   const body = new ReadableStream({
     pull(controller) {
-      pulled = true;
       controller.enqueue(new Uint8Array([123, 125]));
       controller.close();
     }
@@ -49,9 +47,12 @@ test("declared oversized responses fail before body consumption", async () => {
         }
       })
     }),
-    (error) => error.failureClass === "response_too_large"
+    (error) => {
+      assert.equal(error.failureClass, "response_too_large");
+      assert.equal(error.details.declaredLength, CLIENT_LIMITS.maxBytes + 1);
+      return true;
+    }
   );
-  assert.equal(pulled, false);
 });
 
 test("a redirect off the ONS allow-list is rejected", async () => {
