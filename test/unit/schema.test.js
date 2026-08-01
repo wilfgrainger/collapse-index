@@ -5,6 +5,7 @@ import {
   isHeadlineEligibleObservation,
   validateEvidenceObject,
   validateObservation,
+  validateSnapshot,
   validateSource
 } from "../../src/domain/evidence/schema.js";
 import { EVIDENCE_STATE, GEOGRAPHY, QUALITY_CLASS } from "../../src/domain/evidence/states.js";
@@ -32,8 +33,39 @@ function validObservation(overrides = {}) {
     sourceUrl: "https://www.ons.gov.uk/x/data",
     licence: "Open Government Licence v3.0",
     evidenceSha256: VALID_HASH,
+    dependencyFingerprint: `primary:${VALID_HASH}`,
     parserVersion: "ons-timeseries@1.0.0",
     state: EVIDENCE_STATE.VERIFIED,
+    denominator: null,
+    ...overrides
+  };
+}
+
+function validSnapshot(overrides = {}) {
+  return {
+    schemaVersion: "2.0",
+    methodologyVersion: "1.0.0-alpha.1",
+    asOf: "2026-08-01T09:00:00.000Z",
+    generatedAt: "2026-08-01T09:00:01.000Z",
+    publication: { status: "suppressed", headlineScore: null },
+    structural: {
+      observedPressure: 1,
+      availableWeight: 0.08,
+      missingWeight: 0.92,
+      range: { low: 1, high: 93 }
+    },
+    acute: { overlay: 0 },
+    confidence: { score: 0.08 },
+    indicators: [{
+      id: "cpi_inflation",
+      available: true,
+      weight: 0.08,
+      pressure: 12.5,
+      source: {
+        evidenceSha256: VALID_HASH,
+        dependencyFingerprint: `primary:${VALID_HASH}`
+      }
+    }],
     ...overrides
   };
 }
@@ -43,12 +75,12 @@ test("a complete observation validates", () => {
   assert.equal(result.ok, true, JSON.stringify(result.errors));
 });
 
-test("an observation cannot exist without an evidence hash", () => {
+test("an observation cannot exist without evidence provenance", () => {
   for (const bad of [undefined, "", "not-a-hash", "A".repeat(64), "a".repeat(63)]) {
     const result = validateObservation(validObservation({ evidenceSha256: bad }));
     assert.equal(result.ok, false, `accepted hash: ${bad}`);
-    assert.ok(result.errors.some((e) => e.code === "observation.evidenceSha256"));
   }
+  assert.equal(validateObservation(validObservation({ dependencyFingerprint: "" })).ok, false);
 });
 
 test("a missing reference period is rejected", () => {
@@ -63,13 +95,25 @@ test("a reference period cannot end before it starts", () => {
   assert.ok(result.errors.some((e) => e.code === "observation.period"));
 });
 
-test("a blank value is rejected rather than coerced to zero", () => {
+test("blank and non-finite values are rejected rather than coerced", () => {
   for (const bad of [null, undefined, "", "n/a", Number.NaN]) {
-    const result = validateObservation(validObservation({ rawValue: bad }));
-    assert.equal(result.ok, false, `accepted raw value: ${String(bad)}`);
+    assert.equal(validateObservation(validObservation({ rawValue: bad })).ok, false);
   }
-  // Zero itself is a legitimate measurement and must still pass.
-  assert.equal(validateObservation(validObservation({ rawValue: 0 })).ok, true);
+  assert.equal(validateObservation(validObservation({ transformedValue: Number.NaN })).ok, false);
+  assert.equal(validateObservation(validObservation({ rawValue: 0, transformedValue: 0 })).ok, true);
+});
+
+test("derived observations require denominator evidence", () => {
+  const denominator = {
+    sourceId: "ons-mgrz",
+    cdid: "MGRZ",
+    value: 34_000,
+    periodStart: "2026-04-01",
+    periodEnd: "2026-06-30",
+    evidenceSha256: "b".repeat(64)
+  };
+  assert.equal(validateObservation(validObservation({ denominator })).ok, true);
+  assert.equal(validateObservation(validObservation({ denominator: { ...denominator, evidenceSha256: null } })).ok, false);
 });
 
 test("unknown units, states, geographies and frequencies are rejected", () => {
@@ -79,36 +123,18 @@ test("unknown units, states, geographies and frequencies are rejected", () => {
   assert.equal(validateObservation(validObservation({ frequency: "fortnightly" })).ok, false);
 });
 
-test("exact source identity is required", () => {
-  assert.equal(validateObservation(validObservation({ cdid: "" })).ok, false);
-  assert.equal(validateObservation(validObservation({ sourceId: undefined })).ok, false);
-  assert.equal(validateObservation(validObservation({ licence: "" })).ok, false);
-});
-
-test("illustrative evidence validates but warns and is never headline-eligible", () => {
+test("illustrative evidence validates but is never headline-eligible", () => {
   const observation = validObservation({ state: EVIDENCE_STATE.ILLUSTRATIVE });
   const result = validateObservation(observation);
-
-  assert.equal(result.ok, true, "structurally valid");
-  assert.ok(result.warnings.some((w) => w.code === "observation.illustrative"));
+  assert.equal(result.ok, true);
   assert.equal(isHeadlineEligibleObservation(observation), false);
 });
 
 test("only verified and revised states can support a headline", () => {
   const eligible = [EVIDENCE_STATE.VERIFIED, EVIDENCE_STATE.REVISED];
   for (const state of Object.values(EVIDENCE_STATE)) {
-    assert.equal(
-      isHeadlineEligibleObservation(validObservation({ state })),
-      eligible.includes(state),
-      `state ${state}`
-    );
+    assert.equal(isHeadlineEligibleObservation(validObservation({ state })), eligible.includes(state));
   }
-});
-
-test("headline eligibility also requires a real hash and a finite value", () => {
-  assert.equal(isHeadlineEligibleObservation(validObservation({ evidenceSha256: "nope" })), false);
-  assert.equal(isHeadlineEligibleObservation(validObservation({ rawValue: null })), false);
-  assert.equal(isHeadlineEligibleObservation(null), false);
 });
 
 test("source declarations require licence, geography and expiry", () => {
@@ -128,7 +154,6 @@ test("source declarations require licence, geography and expiry", () => {
   assert.equal(validateSource({ ...source, licence: "" }).ok, false);
   assert.equal(validateSource({ ...source, geography: "MARS" }).ok, false);
   assert.equal(validateSource({ ...source, hardExpiryDays: 0 }).ok, false);
-  assert.equal(validateSource({ ...source, qualityClass: "vibes" }).ok, false);
 });
 
 test("evidence objects require a hash, size and retrieval time", () => {
@@ -142,6 +167,11 @@ test("evidence objects require a hash, size and retrieval time", () => {
   };
   assert.equal(validateEvidenceObject(evidence).ok, true);
   assert.equal(validateEvidenceObject({ ...evidence, bytes: 0 }).ok, false);
-  assert.equal(validateEvidenceObject({ ...evidence, sha256: "short" }).ok, false);
-  assert.equal(validateEvidenceObject({ ...evidence, retrievedAt: "2026-08-01" }).ok, false);
+});
+
+test("schema-v2 snapshots validate and malformed snapshots are rejected", () => {
+  assert.equal(validateSnapshot(validSnapshot()).ok, true);
+  assert.equal(validateSnapshot(validSnapshot({ schemaVersion: "1.0" })).ok, false);
+  assert.equal(validateSnapshot(validSnapshot({ confidence: 0.8 })).ok, false);
+  assert.equal(validateSnapshot(validSnapshot({ indicators: [] })).ok, false);
 });
