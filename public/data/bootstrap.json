@@ -1,0 +1,461 @@
+{
+  "kind": "bundled-fixture-capture",
+  "capturedAt": "2026-08-01T00:00:00.000Z",
+  "note": "Generated from committed ONS payload fixtures, not live ingestion. Values and payload hashes are real; the retrieval date is frozen at capture time. Bind D1 and run the ingestion Worker for live evidence.",
+  "fixtureRelease": "2026-07-live",
+  "evidence": [
+    {
+      "sourceId": "ons-d7g7",
+      "sha256": "c51a8dbd246c6790ab91c36168c80231e600d1b31cc66a4fb881df9ca62e1e9f",
+      "objectKey": "sources/ons-d7g7/2026-07-21/c51a8dbd246c6790ab91c36168c80231e600d1b31cc66a4fb881df9ca62e1e9f/d7g7-mm23.json",
+      "byteLength": 121500
+    },
+    {
+      "sourceId": "ons-mgsx",
+      "sha256": "3ec061a4820d9d18f15db9ce6ab4b94b67931b9c039bf7f234b02790e6b060a9",
+      "objectKey": "sources/ons-mgsx/2026-07-20/3ec061a4820d9d18f15db9ce6ab4b94b67931b9c039bf7f234b02790e6b060a9/mgsx-lms.json",
+      "byteLength": 173431
+    },
+    {
+      "sourceId": "ons-n3y6",
+      "sha256": "17fd502423872f839b0c205ac43ec245bb03f6b1aaf91507fe79defdec880c96",
+      "objectKey": "sources/ons-n3y6/2026-06-29/17fd502423872f839b0c205ac43ec245bb03f6b1aaf91507fe79defdec880c96/n3y6-qna.json",
+      "byteLength": 15681
+    },
+    {
+      "sourceId": "ons-bbfw",
+      "sha256": "e6f986f6df155cf9ff509dd5c12464ebc1d53c8703f14adc0abe4bd48c41df7a",
+      "objectKey": "sources/ons-bbfw/2026-07-20/e6f986f6df155cf9ff509dd5c12464ebc1d53c8703f14adc0abe4bd48c41df7a/bbfw-lms.json",
+      "byteLength": 220338
+    },
+    {
+      "sourceId": "ons-mgrz",
+      "sha256": "90a5c5c0147a36fc500b43aa80b6cc308491f19f9baa81f276a11dc5a0e3c0a6",
+      "objectKey": "sources/ons-mgrz/2026-07-20/90a5c5c0147a36fc500b43aa80b6cc308491f19f9baa81f276a11dc5a0e3c0a6/mgrz-lms.json",
+      "byteLength": 176184
+    }
+  ],
+  "snapshot": {
+    "schemaVersion": "2.0",
+    "methodologyVersion": "1.0.0-alpha.1",
+    "asOf": "2026-08-01T00:00:00.000Z",
+    "generatedAt": "2026-08-01T02:30:26.517Z",
+    "publication": {
+      "status": "suppressed",
+      "headlineScore": null,
+      "level": null,
+      "reason": "Fixed-weight availability is 40% and confidence is 38%. A point headline requires 90% availability and 70% confidence.",
+      "gates": {
+        "availableWeight": 0.4,
+        "minAvailableWeight": 0.9,
+        "availabilityPassed": false,
+        "confidence": 0.38,
+        "minConfidence": 0.7,
+        "confidencePassed": false
+      }
+    },
+    "structural": {
+      "observedPressure": 9.5,
+      "availableWeight": 0.4,
+      "missingWeight": 0.6,
+      "range": {
+        "low": 9.5,
+        "high": 69.5
+      },
+      "note": "Weights are fixed and never renormalised. observedPressure is the weighted pressure actually measured, so with incomplete coverage it cannot reach 100 and is not a headline score. The range shows where a complete score could fall."
+    },
+    "acute": {
+      "overlay": 0,
+      "cap": 8,
+      "events": [],
+      "note": "The reviewed-event system is not implemented; no event can currently change the score."
+    },
+    "confidence": {
+      "score": 0.38,
+      "percent": 38,
+      "note": "Evidence health: Σ(weight × quality × freshness × geographic coverage). Not a statistical confidence interval."
+    },
+    "coverage": {
+      "indicatorsAvailable": 4,
+      "indicatorsTotal": 10,
+      "missingIndicators": [
+        "child_poverty",
+        "housing_stress",
+        "food_insecurity",
+        "trust_in_government",
+        "healthcare_strain",
+        "environmental_disruption"
+      ],
+      "byDomain": [
+        {
+          "domain": "economy_living_standards",
+          "weight": 0.3,
+          "availableWeight": 0.3,
+          "contribution": 8.04
+        },
+        {
+          "domain": "household_resilience",
+          "weight": 0.25,
+          "availableWeight": 0,
+          "contribution": 0
+        },
+        {
+          "domain": "institutions_cohesion",
+          "weight": 0.2,
+          "availableWeight": 0.1,
+          "contribution": 1.51
+        },
+        {
+          "domain": "public_service_resilience",
+          "weight": 0.15,
+          "availableWeight": 0,
+          "contribution": 0
+        },
+        {
+          "domain": "environmental_disruption",
+          "weight": 0.1,
+          "availableWeight": 0,
+          "contribution": 0
+        }
+      ]
+    },
+    "indicators": [
+      {
+        "id": "gdp_per_capita_growth",
+        "title": "Real GDP per capita growth",
+        "shortTitle": "Growth",
+        "domain": "economy_living_standards",
+        "description": "Real GDP per person, chained-volume measure, seasonally adjusted. Per-head rather than aggregate growth, because population growth can mask falling individual living standards.",
+        "unit": "% year-on-year",
+        "display": "percent",
+        "direction": "lower-is-worse",
+        "weight": 0.12,
+        "available": true,
+        "reason": null,
+        "value": 1,
+        "rawValue": 1,
+        "pressure": 30.7,
+        "contribution": 3.69,
+        "confidenceContribution": 0.12,
+        "factors": {
+          "quality": 1,
+          "freshness": 1,
+          "coverage": 1
+        },
+        "freshness": {
+          "stage": "current",
+          "reason": "within the expected release window",
+          "publishedAt": "2026-06-29T23:00:00.000Z",
+          "expectedNextRelease": "2026-08-13"
+        },
+        "period": {
+          "start": "2025-01-01",
+          "end": "2025-12-31",
+          "label": "2025",
+          "frequency": "annual"
+        },
+        "geography": {
+          "code": "UK",
+          "label": "United Kingdom",
+          "coverageFactor": 1
+        },
+        "state": "verified",
+        "source": {
+          "id": "ons-n3y6",
+          "cdid": "N3Y6",
+          "datasetId": "QNA",
+          "title": "GDP (average) per head, year-on-year growth rate, CVM, seasonally adjusted",
+          "provider": "Office for National Statistics",
+          "url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/n3y6/qna/data",
+          "licence": "Open Government Licence v3.0",
+          "qualityClass": "accredited-official",
+          "evidenceSha256": "17fd502423872f839b0c205ac43ec245bb03f6b1aaf91507fe79defdec880c96",
+          "parserVersion": "ons-timeseries@1.0.0"
+        },
+        "notes": "Chained-volume measure. The nominal series N3Y3 must never be substituted. Annual reference periods are revised by quarterly national-accounts releases."
+      },
+      {
+        "id": "cpi_inflation",
+        "title": "CPI inflation pressure",
+        "shortTitle": "Inflation",
+        "domain": "economy_living_standards",
+        "description": "Consumer Prices Index annual rate, all items. Scored two-sided: both high inflation and sustained deflation raise pressure.",
+        "unit": "% year-on-year",
+        "display": "percent",
+        "direction": "two-sided",
+        "weight": 0.08,
+        "available": true,
+        "reason": null,
+        "value": 2.6,
+        "rawValue": 2.6,
+        "pressure": 12.8,
+        "contribution": 1.02,
+        "confidenceContribution": 0.08,
+        "factors": {
+          "quality": 1,
+          "freshness": 1,
+          "coverage": 1
+        },
+        "freshness": {
+          "stage": "current",
+          "reason": "within the expected release window",
+          "publishedAt": "2026-07-21T23:00:00.000Z",
+          "expectedNextRelease": "2026-08-19"
+        },
+        "period": {
+          "start": "2026-06-01",
+          "end": "2026-06-30",
+          "label": "2026 JUN",
+          "frequency": "monthly"
+        },
+        "geography": {
+          "code": "UK",
+          "label": "United Kingdom",
+          "coverageFactor": 1
+        },
+        "state": "verified",
+        "source": {
+          "id": "ons-d7g7",
+          "cdid": "D7G7",
+          "datasetId": "MM23",
+          "title": "CPI annual rate: all items, 2015=100",
+          "provider": "Office for National Statistics",
+          "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23/data",
+          "licence": "Open Government Licence v3.0",
+          "qualityClass": "accredited-official",
+          "evidenceSha256": "c51a8dbd246c6790ab91c36168c80231e600d1b31cc66a4fb881df9ca62e1e9f",
+          "parserVersion": "ons-timeseries@1.0.0"
+        },
+        "notes": "Consumer Prices Index, not CPIH and not RPI. Substituting either would change the measured concept."
+      },
+      {
+        "id": "labour_market_stress",
+        "title": "Labour-market stress",
+        "shortTitle": "Unemployment",
+        "domain": "economy_living_standards",
+        "description": "Unemployment rate, aged 16 and over, seasonally adjusted, published as a rolling three-month estimate. Version 1 scores this series alone; inactivity, vacancies and real pay are candidate additions to a documented sub-index.",
+        "unit": "% of those aged 16+ in the labour force",
+        "display": "percent",
+        "direction": "higher-is-worse",
+        "weight": 0.1,
+        "available": true,
+        "reason": null,
+        "value": 4.9,
+        "rawValue": 4.9,
+        "pressure": 33.3,
+        "contribution": 3.33,
+        "confidenceContribution": 0.09,
+        "factors": {
+          "quality": 0.9,
+          "freshness": 1,
+          "coverage": 1
+        },
+        "freshness": {
+          "stage": "current",
+          "reason": "within the expected release window",
+          "publishedAt": "2026-07-20T23:00:00.000Z",
+          "expectedNextRelease": "2026-08-18"
+        },
+        "period": {
+          "start": "2026-03-01",
+          "end": "2026-05-31",
+          "label": "2026 APR",
+          "frequency": "rolling-quarter"
+        },
+        "geography": {
+          "code": "UK",
+          "label": "United Kingdom",
+          "coverageFactor": 1
+        },
+        "state": "verified",
+        "source": {
+          "id": "ons-mgsx",
+          "cdid": "MGSX",
+          "datasetId": "LMS",
+          "title": "Unemployment rate, aged 16 and over, seasonally adjusted",
+          "provider": "Office for National Statistics",
+          "url": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms/data",
+          "licence": "Open Government Licence v3.0",
+          "qualityClass": "official-in-development",
+          "evidenceSha256": "3ec061a4820d9d18f15db9ce6ab4b94b67931b9c039bf7f234b02790e6b060a9",
+          "parserVersion": "ons-timeseries@1.0.0"
+        },
+        "notes": "Published as a rolling three-month estimate; a point labelled APR covers March to May."
+      },
+      {
+        "id": "child_poverty",
+        "title": "Child poverty",
+        "shortTitle": "Child poverty",
+        "domain": "household_resilience",
+        "description": "Children in relative low-income households after housing costs (DWP Households Below Average Income). No collector yet: the single-year versus three-year-average definition must be pinned before ingestion.",
+        "unit": "% of children",
+        "display": "percent",
+        "direction": "higher-is-worse",
+        "weight": 0.09,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      },
+      {
+        "id": "housing_stress",
+        "title": "Private-renter housing stress",
+        "shortTitle": "Housing",
+        "domain": "household_resilience",
+        "description": "Median private rent as a share of median private-renter household income. No collector yet. The structural ONS series excludes Scotland, so it will carry a coverage penalty.",
+        "unit": "% of household income spent on rent",
+        "display": "percent",
+        "direction": "higher-is-worse",
+        "weight": 0.08,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      },
+      {
+        "id": "food_insecurity",
+        "title": "Household food insecurity",
+        "shortTitle": "Food security",
+        "domain": "household_resilience",
+        "description": "FSA Food and You 2, USDA food-security module. No collector yet. This replaces food-bank parcel counts in the core score: parcel counts measure network demand, not population need.",
+        "unit": "% of households with low or very low food security",
+        "display": "percent",
+        "direction": "higher-is-worse",
+        "weight": 0.08,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      },
+      {
+        "id": "trust_in_government",
+        "title": "Trust in national government",
+        "shortTitle": "Public trust",
+        "domain": "institutions_cohesion",
+        "description": "Share of adults reporting trust in the UK government. No collector yet: the ONS and OECD measures use different questions and thresholds and must not be spliced.",
+        "unit": "% of adults expressing trust",
+        "display": "percent",
+        "direction": "lower-is-worse",
+        "weight": 0.1,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      },
+      {
+        "id": "industrial_disruption",
+        "title": "Industrial disruption",
+        "shortTitle": "Strikes",
+        "domain": "institutions_cohesion",
+        "description": "Working days lost to labour disputes, normalised by a versioned employment denominator. Protest and public disorder do not enter this series; they are eligible only for the reviewed acute overlay.",
+        "unit": "working days lost per 1,000 employed people per month",
+        "display": "decimal",
+        "direction": "higher-is-worse",
+        "weight": 0.1,
+        "available": true,
+        "reason": null,
+        "value": 0.754,
+        "rawValue": 26,
+        "pressure": 15.1,
+        "contribution": 1.51,
+        "confidenceContribution": 0.09,
+        "factors": {
+          "quality": 0.9,
+          "freshness": 1,
+          "coverage": 1
+        },
+        "freshness": {
+          "stage": "current",
+          "reason": "within the expected release window",
+          "publishedAt": "2026-07-20T23:00:00.000Z",
+          "expectedNextRelease": "2026-08-18"
+        },
+        "period": {
+          "start": "2026-05-01",
+          "end": "2026-05-31",
+          "label": "2026 MAY",
+          "frequency": "monthly"
+        },
+        "geography": {
+          "code": "UK",
+          "label": "United Kingdom",
+          "coverageFactor": 1
+        },
+        "state": "verified",
+        "source": {
+          "id": "ons-bbfw",
+          "cdid": "BBFW",
+          "datasetId": "LMS",
+          "title": "Labour disputes: working days lost due to strike action, UK (thousands)",
+          "provider": "Office for National Statistics",
+          "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/bbfw/lms/data",
+          "licence": "Open Government Licence v3.0",
+          "qualityClass": "official",
+          "evidenceSha256": "e6f986f6df155cf9ff509dd5c12464ebc1d53c8703f14adc0abe4bd48c41df7a",
+          "parserVersion": "ons-timeseries@1.0.0"
+        },
+        "notes": "A count, so it requires a versioned employment denominator before scoring. The series contains genuinely blank months which must not be read as zero."
+      },
+      {
+        "id": "healthcare_strain",
+        "title": "Elective-healthcare strain",
+        "shortTitle": "NHS waits",
+        "domain": "public_service_resilience",
+        "description": "NHS England Referral to Treatment incomplete pathways. No collector yet. Pathways are not unique people, and the series covers England only, so it will carry a coverage penalty.",
+        "unit": "incomplete pathways per 1,000 residents",
+        "display": "decimal",
+        "direction": "higher-is-worse",
+        "weight": 0.15,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      },
+      {
+        "id": "environmental_disruption",
+        "title": "Severe-weather and flood disruption",
+        "shortTitle": "Environment",
+        "domain": "environmental_disruption",
+        "description": "Composite of flood warnings and severe-weather alerts. No collector yet. The available flood API covers England only, and this must not be described as UK-wide until all four nations have defined coverage.",
+        "unit": "0-100 disruption signal",
+        "display": "integer",
+        "direction": "higher-is-worse",
+        "weight": 0.1,
+        "available": false,
+        "reason": "no collector implemented",
+        "pressure": null,
+        "value": null,
+        "contribution": 0,
+        "confidenceContribution": 0,
+        "freshness": null,
+        "geography": null,
+        "source": null
+      }
+    ]
+  }
+}

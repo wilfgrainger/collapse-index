@@ -3,21 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Methodology for the UK Stability Monitor and Collapse Index.">
+  <meta name="description" content="Methodology for the UK Stability Monitor: fixed weights, published curves, evidence confidence and publication gates.">
   <title>Methodology · UK Stability Monitor</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <style>
     .prose { width: min(calc(100% - 2rem), 820px); margin: 0 auto; padding: 5rem 0 8rem; }
-    .prose h1 { font-size: clamp(3rem, 8vw, 5.8rem); }
+    .prose h1 { font-size: clamp(2.6rem, 8vw, 5rem); }
     .prose h2 { margin-top: 4rem; font-size: 2rem; }
-    .prose h3 { margin-top: 2rem; }
+    .prose h3 { margin-top: 2rem; font-size: 1.15rem; }
     .prose p, .prose li { color: #b7c2ce; }
     .prose table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: .9rem; }
     .prose th, .prose td { padding: .8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
     .prose th { background: var(--surface-2); }
+    .prose .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .table-scroll { overflow-x: auto; }
     .formula { padding: 1.2rem; border: 1px solid var(--line); background: var(--surface); font-family: ui-monospace, monospace; overflow-x: auto; }
     .warning-box { padding: 1.2rem; border-left: 4px solid #e0a11b; background: rgba(224,161,27,.08); }
+    .done { color: #9adcbb; }
+    .todo { color: #e8c987; }
   </style>
 </head>
 <body>
@@ -29,72 +33,186 @@
   </header>
 
   <main class="prose">
-    <p class="eyebrow">Methodology version 0.1.0</p>
-    <h1>A stress index that shows its workings.</h1>
-    <p class="lede">The UK Stability Monitor is a composite measure of national systemic pressure. It is not a forecast of state failure, a political approval score or a substitute for the underlying evidence.</p>
+    <p class="eyebrow">Methodology version 1.0.0-alpha.1</p>
+    <h1>An index that shows its workings.</h1>
+    <p class="lede">
+      The UK Stability Monitor measures observable systemic pressure on the United Kingdom's economic,
+      household, institutional, public-service and environmental systems. It is not a forecast of state
+      failure, a political approval score, or a substitute for the underlying evidence.
+    </p>
 
-    <div class="warning-box"><strong>Prototype status.</strong> The scoring engine and disclosure model are implemented. The current seed observations remain provisional or illustrative until every value, definition and historical series is independently validated.</div>
+    <div class="warning-box">
+      <strong>No headline is published.</strong> Four of the ten indicators have working collectors,
+      covering 40% of fixed weight. The publication gates require 90%. Until they are met, the site
+      shows what has been measured and what has not, and withholds the single number.
+    </div>
 
-    <h2>1. Headline calculation</h2>
-    <p>Each indicator value is mapped onto a transparent 0–100 pressure scale using published piecewise-linear thresholds. The hard-data score is the weighted mean of available indicators.</p>
-    <div class="formula">base score = Σ(indicator pressure × indicator weight) ÷ Σ(available weights)</div>
-    <p>An independently reviewed qualitative event overlay may add up to 10 points. It is currently disabled in practice: the prototype includes no event that changes the score.</p>
-    <div class="formula">headline score = clamp(base score + event overlay, 0, 100)</div>
-
-    <h2>2. Levels</h2>
+    <h2>1. Four outputs, kept apart</h2>
+    <p>
+      The monitor never reduces itself to one figure. It publishes four things, and the interface is
+      required to show them together.
+    </p>
     <table>
-      <thead><tr><th>Score</th><th>Level</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td>0–24</td><td>Stable</td><td>Broad systems functioning within normal pressure ranges.</td></tr>
-        <tr><td>25–39</td><td>Guarded</td><td>Several elevated pressures, with resilience intact.</td></tr>
-        <tr><td>40–54</td><td>Strained</td><td>Multiple pressures materially above healthy baselines.</td></tr>
-        <tr><td>55–69</td><td>Severe</td><td>High pressure and visible erosion of resilience.</td></tr>
-        <tr><td>70–84</td><td>Critical</td><td>Acute, mutually reinforcing strain across systems.</td></tr>
-        <tr><td>85–100</td><td>Emergency</td><td>Exceptional, widespread disruption and serious systemic risk.</td></tr>
+        <tr><th>Structural pressure</th><td>Fixed-weight sum of measured indicator pressure, 0–100.</td></tr>
+        <tr><th>Acute overlay</th><td>Reviewed, decaying disruption contribution, capped at 8 points.</td></tr>
+        <tr><th>Headline score</th><td><code>min(100, structural + acute)</code> — published only when the gates pass.</td></tr>
+        <tr><th>Confidence</th><td>Evidence health, 0–100. Not a statistical confidence interval.</td></tr>
       </tbody>
     </table>
+
+    <h2>2. Weights are fixed and never renormalised</h2>
+    <p>
+      This is the central commitment of version 1, and the thing most composite indices get wrong. When
+      an indicator has no data, its weight is <em>not</em> redistributed across the others:
+    </p>
+    <div class="formula">structural pressure = Σ(weight<sub>i</sub> × pressure<sub>i</sub>)</div>
+    <p>
+      The sum is not divided by the weight of available indicators. If it were, four indicators could be
+      rescaled to look like a complete picture of the country, and a gap in the evidence would silently
+      become a claim about it. Instead, missing evidence lowers coverage and confidence, and the site
+      reports the range a complete score could occupy:
+    </p>
+    <div class="formula">range = [ measured , measured + (missing weight × 100) ]</div>
 
     <h2>3. Indicator weights</h2>
+    <p>Weights are fixed within a methodology version. Changing them requires a new version, a regenerated historical series and a sensitivity report.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Domain</th><th>Indicator</th><th class="num">Weight</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="3">Economy and living standards</td><td>Real GDP per capita growth</td><td class="num">12%</td><td>ONS <code>N3Y6/QNA</code></td><td class="done">collected</td></tr>
+          <tr><td>CPI inflation pressure</td><td class="num">8%</td><td>ONS <code>D7G7/MM23</code></td><td class="done">collected</td></tr>
+          <tr><td>Labour-market stress</td><td class="num">10%</td><td>ONS <code>MGSX/LMS</code></td><td class="done">collected</td></tr>
+          <tr><td rowspan="3">Household resilience</td><td>Child poverty</td><td class="num">9%</td><td>DWP HBAI</td><td class="todo">definition pending</td></tr>
+          <tr><td>Private-renter housing stress</td><td class="num">8%</td><td>ONS rental affordability</td><td class="todo">definition pending</td></tr>
+          <tr><td>Household food insecurity</td><td class="num">8%</td><td>FSA Food and You 2</td><td class="todo">coverage pending</td></tr>
+          <tr><td rowspan="2">Institutions and cohesion</td><td>Trust in national government</td><td class="num">10%</td><td>ONS / OECD</td><td class="todo">continuity pending</td></tr>
+          <tr><td>Industrial disruption</td><td class="num">10%</td><td>ONS <code>BBFW/LMS</code> ÷ <code>MGRZ/LMS</code></td><td class="done">collected</td></tr>
+          <tr><td>Public-service resilience</td><td>Elective-healthcare strain</td><td class="num">15%</td><td>NHS England RTT</td><td class="todo">England-only design</td></tr>
+          <tr><td>Environmental disruption</td><td>Severe weather and flooding</td><td class="num">10%</td><td>Environment Agency</td><td class="todo">four-nation design</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>4. Transformations</h2>
+    <p>
+      Each raw value is mapped onto a 0–100 pressure scale by a published piecewise-linear curve: 0 is
+      unusually low pressure, 50 is materially elevated, 100 is an extreme observed or policy-relevant
+      condition. Curves are frozen within a version — they never recalibrate themselves as data arrives,
+      because a bad year must not be allowed to quietly redefine "normal". Every breakpoint and its
+      rationale is published at <a href="/api/v1/methodology">/api/v1/methodology</a>.
+    </p>
+
+    <h3>Inflation is scored two-sided</h3>
+    <p>
+      Sustained deflation is destabilising too, so the inflation curve rises on both sides of the 2%
+      target rather than only above it. It rises less steeply on the deflation side, because
+      debt-deflation dynamics reach households more slowly than a price shock does. The trough is scored
+      at 5 rather than 0: on-target inflation means prices are not currently <em>adding</em> to pressure,
+      not that the cost of living is painless.
+    </p>
+
+    <h3>Counts are normalised by a versioned denominator</h3>
+    <p>
+      Working days lost is a count, so it is divided by an employment denominator (<code>MGRZ</code>) to
+      give days lost per 1,000 employed people per month. The denominator's own reference period,
+      publication date and evidence hash are recorded against every derived observation, so a later
+      revision to employment cannot silently rewrite a published rate.
+    </p>
+
+    <h2>5. Confidence and freshness</h2>
+    <div class="formula">confidence = Σ(weight<sub>i</sub> × quality<sub>i</sub> × freshness<sub>i</sub> × coverage<sub>i</sub>)</div>
+    <p>
+      Because weights stay fixed, a missing indicator contributes zero confidence. Quality reflects the
+      statistic's status, from accredited official statistics down to manually entered values. Coverage is
+      the share of the UK population a source actually describes — England-only evidence is multiplied by
+      roughly 0.845 and flagged, so it can never quietly stand in for the UK.
+    </p>
+    <p>
+      Freshness is judged against the source's own announced next release date, not a generic decay. An
+      annual statistic is not stale for being annual; it becomes stale when a release that was expected
+      does not arrive. Beyond a source-specific hard expiry the indicator drops out entirely.
+    </p>
     <table>
-      <thead><tr><th>Indicator</th><th>Weight</th><th>Primary measure</th></tr></thead>
+      <thead><tr><th>Stage</th><th>Meaning</th><th class="num">Factor</th></tr></thead>
       <tbody>
-        <tr><td>Economic growth</td><td>14%</td><td>Real GDP per person, annual growth</td></tr>
-        <tr><td>Inflation and living costs</td><td>11%</td><td>CPI annual inflation</td></tr>
-        <tr><td>Employment pressure</td><td>11%</td><td>Unemployment rate</td></tr>
-        <tr><td>Poverty and inequality</td><td>10%</td><td>Child relative poverty after housing costs</td></tr>
-        <tr><td>Housing stress</td><td>10%</td><td>Private rent as a share of income</td></tr>
-        <tr><td>Trust and governance</td><td>10%</td><td>Trust in national government</td></tr>
-        <tr><td>Social and industrial unrest</td><td>9%</td><td>Working days lost per 1,000 employees</td></tr>
-        <tr><td>Basic-needs hardship</td><td>9%</td><td>Emergency food parcels per 1,000 people</td></tr>
-        <tr><td>Healthcare strain</td><td>11%</td><td>Elective waiting pathways per 1,000 people</td></tr>
-        <tr><td>Environmental disruption</td><td>5%</td><td>Transparent severe-weather disruption signal</td></tr>
+        <tr><td>Current</td><td>Within the expected release window</td><td class="num">1.00</td></tr>
+        <tr><td>Aging</td><td>One expected release missed</td><td class="num">0.80</td></tr>
+        <tr><td>Stale</td><td>Two expected releases missed</td><td class="num">0.50</td></tr>
+        <tr><td>Expired</td><td>Past hard expiry; indicator unavailable</td><td class="num">0.00</td></tr>
       </tbody>
     </table>
 
-    <h2>4. Freshness and confidence</h2>
-    <p>The site may recalculate daily, but it never relabels an old statistic as today's figure. Every observation carries its actual reference date, publication date, source and verification status.</p>
-    <p>Confidence combines source confidence and freshness against the indicator's expected release cadence. Stale data does not automatically reduce or increase the stress score; it reduces confidence in the headline.</p>
+    <h2>6. Publication gates</h2>
+    <p>A point headline is published only when both gates pass. Today neither does.</p>
+    <table>
+      <thead><tr><th>Gate</th><th class="num">Required</th><th class="num">Current</th></tr></thead>
+      <tbody>
+        <tr><td>Fixed-weight availability</td><td class="num">90%</td><td class="num">40%</td></tr>
+        <tr><td>Evidence confidence</td><td class="num">70%</td><td class="num">38%</td></tr>
+      </tbody>
+    </table>
 
-    <h2>5. Event overlay</h2>
-    <p>News events are not sentiment-scored automatically. To affect the index, an event must have a named source, occurrence time, severity, confidence, decay half-life and an approved review state. Each event contributes at most two points before decay, and the total overlay is capped at ten.</p>
-    <div class="formula">event effect = (severity ÷ 5) × 2 × evidence confidence × 0.5^(age ÷ half-life)</div>
-
-    <h2>6. Historical chart</h2>
-    <p>The first-release history is explicitly labelled an illustrative backcast. It exists to test the interface. It must not be presented as calculated evidence until all ten source series have been acquired, transformed with the same versioned method and independently checked.</p>
-
-    <h2>7. Change control</h2>
-    <p>Any change to indicator definitions, weights, thresholds, event rules or missing-data handling requires a methodology version change, test updates and a published impact note. Historical values should be regenerated under the new method while the prior series remains reproducible.</p>
-
-    <h2>8. What this index must never claim</h2>
+    <h2>7. Evidence rules</h2>
     <ul>
-      <li>That a particular score proves the UK is about to collapse.</li>
-      <li>That daily publication means every input is daily.</li>
+      <li>An observation cannot exist without the SHA-256 of the exact bytes it was parsed from.</li>
+      <li>The payload is archived before it is parsed, and parsed from those same bytes.</li>
+      <li>Collectors assert the exact series and dataset identifier; a mismatch fails rather than scoring the wrong series.</li>
+      <li>A blank cell stays blank. It is never read as zero.</li>
+      <li>A unit or definition change quarantines the release for review instead of ingesting it.</li>
+      <li>Observations are append-only: a revision adds a version and records what it superseded.</li>
+      <li>A failed fetch, parse or validation writes nothing; the previous verified value stays and ages.</li>
+    </ul>
+
+    <h2>8. Acute event overlay</h2>
+    <p>
+      News is not sentiment-scored. To affect the score, an event needs a defined scope, measurable
+      operational disruption, corroboration from at least two credible sources, and a named reviewer's
+      approval. Political controversy, commentary and social-media volume do not qualify.
+    </p>
+    <div class="formula">contribution = 2 × (severity ÷ 5) × evidence × reach × breadth × 0.5^(age ÷ half-life)</div>
+    <p>Each event contributes at most 2 points and the total overlay is capped at 8. The review workflow is not yet built, so nothing currently feeds it.</p>
+
+    <h2>9. History</h2>
+    <p>
+      There is no historical chart. A reproducible backcast requires acquiring source histories,
+      publishing every transformation and denominator, and marking definition and geography breaks. Until
+      that exists, the history endpoint returns an empty series rather than an illustrative one — a
+      plausible-looking line the model never actually calculated would be the most misleading thing on
+      the site.
+    </p>
+
+    <h2>10. Change control</h2>
+    <p>
+      Any change to definitions, weights, breakpoints, event rules or missing-data handling requires a
+      methodology version change, updated tests and a published impact note. Prior series must remain
+      reproducible.
+    </p>
+
+    <h2>11. What this index must never claim</h2>
+    <ul>
+      <li>That a score proves the UK is about to collapse.</li>
+      <li>That daily recalculation means the inputs are daily.</li>
+      <li>That England-only evidence describes the United Kingdom.</li>
       <li>That one news story or social-media trend represents the country.</li>
       <li>That correlation identifies political or institutional causation.</li>
       <li>That uncertainty can be hidden behind a precise-looking number.</li>
     </ul>
   </main>
 
-  <footer class="site-footer"><div class="shell footer-inner"><div><strong>UK Stability Monitor</strong><p>Methodology first. Drama last.</p></div><div class="footer-links"><a href="/">Dashboard</a><a href="/api/v1/openapi.json">API</a></div></div></footer>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>Methodology first. Drama last. Contains public sector information licensed under the Open Government Licence v3.0.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/">Dashboard</a>
+        <a href="/api/v1/methodology">Methodology API</a>
+        <a href="/api/v1/openapi.json">OpenAPI</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
