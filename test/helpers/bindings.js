@@ -1,10 +1,10 @@
 /**
- * Test doubles for the Cloudflare bindings.
+ * Test doubles for Cloudflare bindings.
  *
- * The D1 double runs the real migration SQL against Node's built-in SQLite, so
- * schema constraints, foreign keys, CHECK clauses and UNIQUE-based idempotency
- * are genuinely exercised rather than mocked away. If a migration is invalid,
- * these tests fail before Wrangler ever sees it.
+ * The D1 double runs real migration SQL against Node's built-in SQLite. D1
+ * supports numbered positional parameters (`?1`, `?2`), while node:sqlite's
+ * positional API accepts anonymous `?` placeholders. The adapter below
+ * translates the syntax and preserves the numbered binding order.
  */
 
 import { DatabaseSync } from "node:sqlite";
@@ -24,6 +24,25 @@ function plain(row) {
   return row ? { ...row } : null;
 }
 
+function compileD1Parameters(sql, args) {
+  const ordered = [];
+  let foundNumbered = false;
+  const compiledSql = sql.replace(/\?(\d+)/g, (_match, rawIndex) => {
+    foundNumbered = true;
+    const index = Number(rawIndex) - 1;
+    if (!Number.isInteger(index) || index < 0 || index >= args.length) {
+      throw new RangeError(`D1 parameter ?${rawIndex} has no bound value`);
+    }
+    ordered.push(args[index]);
+    return "?";
+  });
+
+  return {
+    sql: compiledSql,
+    args: foundNumbered ? ordered : args
+  };
+}
+
 class TestStatement {
   constructor(db, sql, args = []) {
     this.db = db;
@@ -35,8 +54,13 @@ class TestStatement {
     return new TestStatement(this.db, this.sql, args.map(normaliseArgument));
   }
 
+  compiled() {
+    return compileD1Parameters(this.sql, this.args);
+  }
+
   async run() {
-    const result = this.db.prepare(this.sql).run(...this.args);
+    const compiled = this.compiled();
+    const result = this.db.prepare(compiled.sql).run(...compiled.args);
     return {
       success: true,
       meta: {
@@ -47,15 +71,16 @@ class TestStatement {
   }
 
   async first() {
-    return plain(this.db.prepare(this.sql).get(...this.args));
+    const compiled = this.compiled();
+    return plain(this.db.prepare(compiled.sql).get(...compiled.args));
   }
 
   async all() {
-    return { results: this.db.prepare(this.sql).all(...this.args).map(plain) };
+    const compiled = this.compiled();
+    return { results: this.db.prepare(compiled.sql).all(...compiled.args).map(plain) };
   }
 }
 
-/** Applies every migration in order, from an empty database. */
 export async function createTestDatabase() {
   const db = new DatabaseSync(":memory:");
   db.exec("PRAGMA foreign_keys = ON");
@@ -79,7 +104,6 @@ export async function createTestDatabase() {
   };
 }
 
-/** In-memory R2 double with the subset of the API the archive uses. */
 export function createTestBucket() {
   const objects = new Map();
   return {
@@ -107,12 +131,6 @@ export function createTestBucket() {
   };
 }
 
-/**
- * A fetch double that serves the committed fixtures by URL.
- *
- * `overrides` lets a test make one source fail without affecting the others,
- * which is how per-source failure isolation is proven.
- */
 export function createFixtureFetch(fixturesByUrl, overrides = {}) {
   return async function fixtureFetch(url) {
     const key = String(url);
