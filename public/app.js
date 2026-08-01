@@ -79,11 +79,16 @@ function renderStatus(data) {
 
   const notice = el("provenance-notice");
   notice.classList.remove("live", "frozen");
-  if (data.provenance?.store === "d1") {
+  if (data.provenance?.store === "d1" && data.provenance?.operationalStatus === "current") {
     notice.classList.add("live");
     notice.textContent =
       `Live evidence store. Snapshot for ${formatDate(data.provenance.asOfDate ?? data.provenance.generatedAt)} from ` +
       `${data.coverage.indicatorsAvailable} collected ONS series.`;
+  } else if (data.provenance?.store === "d1") {
+    notice.classList.add("frozen");
+    notice.textContent =
+      `Stale materialisation. The latest daily snapshot is ${data.provenance.ageDays ?? "an unknown number of"} days old; ` +
+      "check evidence health before relying on it.";
   } else {
     notice.classList.add("frozen");
     notice.textContent =
