@@ -1,11 +1,9 @@
 /**
- * Builds canonical observations from parsed ONS payloads (WP5).
+ * Builds canonical observations from parsed ONS payloads.
  *
- * This is the boundary where a source-shaped record becomes a
- * methodology-shaped one. Everything needed to reproduce or challenge the
- * number travels with it: exact series, reference period, publication date,
- * evidence hash, parser version and — where a value is derived — the
- * denominator vintage used.
+ * A derived observation carries every evidence dependency that can change its
+ * value. This matters for idempotency: a revised denominator is a material
+ * change even when the numerator payload is byte-for-byte identical.
  */
 
 import { parseOnsTimeSeries, latestPoints, PARSER_VERSION } from "./timeseries.js";
@@ -14,10 +12,6 @@ import { EVIDENCE_STATE } from "../../domain/evidence/states.js";
 import { validateObservation } from "../../domain/evidence/schema.js";
 import { CollectorError, FAILURE_CLASS } from "../../shared/errors.js";
 
-/**
- * Checks the payload's declared unit against the collector's expectation.
- * A unit change is a definitional change and must quarantine the release.
- */
 function assertExpectedUnit(source, meta) {
   const expected = String(source.expectedUnit ?? "").trim().toLowerCase();
   if (!expected) return;
@@ -31,9 +25,6 @@ function assertExpectedUnit(source, meta) {
   }
 }
 
-/**
- * Parses a payload for one source and returns its parsed series plus metadata.
- */
 export function parseForSource(source, text) {
   const parsed = parseOnsTimeSeries(text, {
     cdid: source.cdid,
@@ -44,16 +35,27 @@ export function parseForSource(source, text) {
   return parsed;
 }
 
+/** Stable identity of every payload involved in one observation. */
+export function buildDependencyFingerprint(primaryEvidence, denominator = null) {
+  const parts = [`primary:${primaryEvidence?.sha256 ?? "missing"}`];
+  if (denominator) {
+    parts.push(`denominator:${denominator.evidence?.sha256 ?? "missing"}`);
+  }
+  return parts.join("|");
+}
+
 /**
  * Builds the canonical observation for a source's latest usable point.
- *
- * @param {object} input
- * @param {object} input.source registry declaration
- * @param {object} input.parsed output of parseForSource
- * @param {object} input.evidence { sha256, retrievedAt, key }
- * @param {object} [input.denominator] { source, parsed } when a derived value is required
+ * `previousObservation` is used only to classify a same-period replacement as
+ * revised; a later period remains verified and merely supersedes the old latest.
  */
-export function buildObservation({ source, parsed, evidence, denominator = null }) {
+export function buildObservation({
+  source,
+  parsed,
+  evidence,
+  denominator = null,
+  previousObservation = null
+}) {
   const { latest, previous } = latestPoints(parsed);
   if (!latest) {
     throw new CollectorError(FAILURE_CLASS.VALIDATION, `no usable observation for ${source.cdid}`, { sourceId: source.id });
@@ -64,46 +66,43 @@ export function buildObservation({ source, parsed, evidence, denominator = null 
     sourceId: source.id,
     cdid: parsed.meta.cdid,
     datasetId: parsed.meta.datasetId,
-
     rawValue: latest.value,
     rawUnit: source.unit,
     transformedValue: latest.value,
     unit: source.unit,
-
     frequency: latest.frequency,
     geography: source.geography,
     seasonalAdjustment: source.seasonalAdjustment,
-
     periodStart: latest.periodStart,
     periodEnd: latest.periodEnd,
     periodLabel: latest.periodLabel,
-
     publishedAt: parsed.meta.releaseDate,
     expectedNextRelease: parsed.meta.expectedNextRelease,
     retrievedAt: evidence.retrievedAt,
-
     sourceUrl: source.sourceUrl,
     licence: source.licence,
     evidenceSha256: evidence.sha256,
+    dependencyFingerprint: buildDependencyFingerprint(evidence, denominator),
     evidenceKey: evidence.key ?? null,
     parserVersion: PARSER_VERSION,
-
-    state: EVIDENCE_STATE.VERIFIED,
+    state:
+      previousObservation?.periodEnd === latest.periodEnd
+        ? EVIDENCE_STATE.REVISED
+        : EVIDENCE_STATE.VERIFIED,
     notes: source.notes ?? null,
-
-    // Retained for revision detection and sparklines.
-    previousPoint: previous ? { value: previous.value, periodLabel: previous.periodLabel, periodEnd: previous.periodEnd } : null,
+    previousPoint: previous
+      ? { value: previous.value, periodLabel: previous.periodLabel, periodEnd: previous.periodEnd }
+      : null,
     blankCount: parsed.blankCount,
     seriesPointCount: parsed.points.length,
     denominator: null
   };
 
-  // --- Derived values ------------------------------------------------------
   if (source.requiresDenominator) {
-    if (!denominator?.parsed) {
+    if (!denominator?.parsed || !denominator?.evidence?.sha256) {
       throw new CollectorError(
         FAILURE_CLASS.VALIDATION,
-        `${source.cdid} requires denominator ${source.requiresDenominator} but none was supplied`,
+        `${source.cdid} requires denominator ${source.requiresDenominator} with archived evidence`,
         { sourceId: source.id }
       );
     }
@@ -133,8 +132,10 @@ export function buildObservation({ source, parsed, evidence, denominator = null 
       periodEnd: denominatorPoint.periodEnd,
       periodLabel: denominatorPoint.periodLabel,
       publishedAt: denominator.parsed.meta.releaseDate,
-      evidenceSha256: denominator.evidence?.sha256 ?? null,
-      exactPeriodMatch: denominatorPoint.periodStart <= latest.periodEnd && denominatorPoint.periodEnd >= latest.periodEnd
+      evidenceSha256: denominator.evidence.sha256,
+      exactPeriodMatch:
+        denominatorPoint.periodStart <= latest.periodEnd &&
+        denominatorPoint.periodEnd >= latest.periodEnd
     };
   }
 
@@ -149,14 +150,11 @@ export function buildObservation({ source, parsed, evidence, denominator = null 
   return { observation, validation };
 }
 
-/**
- * Detects whether a newly built observation materially differs from the stored
- * one. Used so a daily run with unchanged evidence creates no new snapshot.
- */
+/** Detects any change that can alter the measured fact or its provenance. */
 export function isMaterialChange(previous, next) {
   if (!previous) return true;
   return (
-    previous.evidenceSha256 !== next.evidenceSha256 ||
+    previous.dependencyFingerprint !== next.dependencyFingerprint ||
     previous.periodEnd !== next.periodEnd ||
     Number(previous.transformedValue) !== Number(next.transformedValue) ||
     previous.publishedAt !== next.publishedAt
