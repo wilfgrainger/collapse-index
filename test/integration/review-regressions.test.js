@@ -37,7 +37,7 @@ test("freshness can expire without any upstream byte changing", async () => {
   const fixtures = await fixturesByUrl();
   await ingest(env, "2026-08-01T09:00:00.000Z", createFixtureFetch(fixtures));
 
-  const later = await ingest(env, "2027-03-01T09:00:00.000Z", createFixtureFetch(fixtures));
+  const later = await ingest(env, "2028-03-01T09:00:00.000Z", createFixtureFetch(fixtures));
   assert.equal(later.snapshot.coverage.indicatorsAvailable, 0);
   assert.equal(later.snapshot.confidence.score, 0);
   assert.equal(later.snapshotCreated, true);
@@ -65,7 +65,7 @@ test("a denominator-only revision produces a new derived observation", async () 
   };
 
   const result = await ingest(env, "2026-08-19T09:00:00.000Z", conditionalFetch);
-  assert.equal(result.written, 1);
+  assert.equal(result.written, 1, JSON.stringify(result.details, null, 2));
 
   const versions = env.DB._raw.prepare(`
     SELECT transformed_value, dependency_fingerprint, denominator_json, state
