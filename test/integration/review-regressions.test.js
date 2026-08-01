@@ -120,8 +120,32 @@ test("a broken bound D1 returns degraded status and never falls back to fixtures
   assert.equal(healthBody.ok, false);
 });
 
+test("an old materialisation is labelled stale and degrades health", async () => {
+  const env = await createEnv();
+  await ingest(env, "2026-08-01T09:00:00.000Z", createFixtureFetch(await fixturesByUrl()));
+  env.CLOCK_NOW = "2026-08-10T09:00:00.000Z";
+
+  const current = await worker.fetch(new Request("https://example.test/api/v1/current"), env);
+  const currentBody = await current.json();
+  assert.equal(current.status, 200, "stale evidence remains inspectable");
+  assert.equal(currentBody.provenance.operationalStatus, "stale");
+  assert.equal(currentBody.provenance.ageDays, 9);
+  assert.equal(current.headers.get("x-snapshot-age-days"), "9");
+  assert.match(current.headers.get("warning"), /Snapshot is 9 days old/);
+
+  const health = await worker.fetch(new Request("https://example.test/api/v1/health"), env);
+  const healthBody = await health.json();
+  assert.equal(health.status, 503);
+  assert.equal(healthBody.status, "degraded");
+  assert.match(healthBody.reason, /9 days old/);
+
+  const evidenceHealth = await worker.fetch(new Request("https://example.test/api/v1/evidence-health"), env);
+  assert.equal(evidenceHealth.status, 503);
+});
+
 test("the removed v0.1 index route remains as a deprecated compatibility alias", async () => {
   const env = await createEnv();
+  env.CLOCK_NOW = "2026-08-01T12:00:00.000Z";
   env.ASSETS = { fetch: async () => new Response("not found", { status: 404 }) };
   await ingest(env, "2026-08-01T09:00:00.000Z", createFixtureFetch(await fixturesByUrl()));
 
