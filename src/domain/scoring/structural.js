@@ -1,16 +1,5 @@
 /**
  * Fixed-weight structural scoring, evidence confidence and publication gates.
- *
- * The three outputs are deliberately kept apart:
- *
- *   observedPressure  what the available evidence actually shows, on the fixed
- *                     weight scale — NOT rescaled to fill the missing weight
- *   confidence        an evidence-health measure, not a statistical interval
- *   publication       whether any of it may be published as a headline
- *
- * Because weights are never renormalised, `observedPressure` with four of ten
- * indicators cannot reach 100 and must not be read as a headline score. The
- * uncertainty range exists to make that impossible to miss.
  */
 
 import {
@@ -28,20 +17,16 @@ import {
   qualityFactor
 } from "../evidence/states.js";
 import { isHeadlineEligibleObservation } from "../evidence/schema.js";
-import { daysBetween } from "../../shared/period.js";
+import { dateInTimeZone, daysBetween } from "../../shared/period.js";
 
-/**
- * Determines how current an observation is.
- *
- * Freshness is judged against the source's own announced next release date
- * where ONS provides one, falling back to the declared cadence. An annual
- * statistic is not "stale" merely for being annual — it is stale when an
- * expected release has been missed.
- */
+/** Determines freshness against UK civil publication dates. */
 export function freshnessStage(observation, source, asOf) {
   if (!observation) return { stage: FRESHNESS.EXPIRED, factor: 0, reason: "no observation" };
 
-  const ageDays = daysBetween(observation.publishedAt.slice(0, 10), asOf.slice(0, 10));
+  const publishedDate = dateInTimeZone(observation.publishedAt) ?? observation.publishedAt.slice(0, 10);
+  const asOfDate = dateInTimeZone(asOf) ?? asOf.slice(0, 10);
+  const ageDays = daysBetween(publishedDate, asOfDate);
+
   if (Number.isFinite(source?.hardExpiryDays) && ageDays > source.hardExpiryDays) {
     return {
       stage: FRESHNESS.EXPIRED,
@@ -54,10 +39,9 @@ export function freshnessStage(observation, source, asOf) {
   const grace = Math.max(0, Number(source?.graceDays ?? 14));
   const expected = observation.expectedNextRelease;
 
-  // Days late relative to the release we were entitled to expect.
   let daysLate;
   if (expected) {
-    daysLate = daysBetween(expected, asOf.slice(0, 10));
+    daysLate = daysBetween(expected, asOfDate);
   } else {
     daysLate = ageDays - cadence;
   }
@@ -74,12 +58,6 @@ export function freshnessStage(observation, source, asOf) {
   return { stage: FRESHNESS.EXPIRED, factor: 0, reason: "no release for more than two expected cycles" };
 }
 
-/**
- * Scores a single indicator.
- *
- * Returns an entry even when nothing is available, because the missing weight
- * is information the interface must show.
- */
 export function scoreIndicator(definition, observation, source, asOf) {
   const base = {
     id: definition.id,
@@ -129,9 +107,6 @@ export function scoreIndicator(definition, observation, source, asOf) {
   const freshness = freshnessStage(observation, source, asOf);
   const quality = qualityFactor(source.qualityClass);
   const coverage = coverageFactor(observation.geography);
-
-  // An expired observation carries no confidence, so it cannot support the
-  // headline even though its last value is still displayed.
   const confidenceContribution = definition.weight * quality * freshness.factor * coverage;
 
   return {
@@ -152,6 +127,7 @@ export function scoreIndicator(definition, observation, source, asOf) {
       stage: freshness.stage,
       reason: freshness.reason,
       publishedAt: observation.publishedAt,
+      publishedDate: dateInTimeZone(observation.publishedAt),
       expectedNextRelease: observation.expectedNextRelease ?? null
     },
     period: {
@@ -176,18 +152,14 @@ export function scoreIndicator(definition, observation, source, asOf) {
       licence: observation.licence,
       qualityClass: source.qualityClass,
       evidenceSha256: observation.evidenceSha256,
+      dependencyFingerprint: observation.dependencyFingerprint,
       parserVersion: observation.parserVersion
     },
+    denominator: observation.denominator ?? null,
     notes: observation.notes ?? null
   };
 }
 
-/**
- * Acute disruption overlay (docs/METHODOLOGY_V1_DESIGN.md §8).
- *
- * Implemented and tested now, but nothing feeds it: the reviewed-event system
- * is release 0.4. An unreviewed event contributes zero, by construction.
- */
 export function acuteOverlay(events = [], asOf = new Date().toISOString()) {
   const now = Date.parse(asOf);
   const scored = [];
@@ -222,13 +194,6 @@ export function acuteOverlay(events = [], asOf = new Date().toISOString()) {
   };
 }
 
-/**
- * Calculates a complete result from canonical observations.
- *
- * @param {object} input
- * @param {Map<string,object>|Array} input.observations keyed by indicator id
- * @param {Map<string,object>} input.sources keyed by source id
- */
 export function calculateSnapshot({
   observations,
   sources,
@@ -246,20 +211,15 @@ export function calculateSnapshot({
   const indicators = definitions.map((definition) => {
     const observation = observationMap.get(definition.id) ?? null;
     const source = observation ? sourceMap.get(observation.sourceId) ?? null : null;
-    if (observation && !source) {
-      return scoreIndicator(definition, null, null, asOf);
-    }
+    if (observation && !source) return scoreIndicator(definition, null, null, asOf);
     return scoreIndicator(definition, observation, source, asOf);
   });
 
   const available = indicators.filter((indicator) => indicator.available);
   const availableWeight = available.reduce((sum, indicator) => sum + indicator.weight, 0);
   const missingWeight = round(1 - availableWeight, 4);
-
-  // Fixed weights: the sum is NOT divided by availableWeight.
   const observedPressure = available.reduce((sum, indicator) => sum + indicator.weight * indicator.pressure, 0);
   const confidence = indicators.reduce((sum, indicator) => sum + indicator.confidenceContribution, 0);
-
   const overlay = acuteOverlay(events, asOf);
 
   const gates = {
@@ -271,12 +231,8 @@ export function calculateSnapshot({
     confidencePassed: confidence >= PUBLICATION_GATES.minConfidence
   };
   const publishable = gates.availabilityPassed && gates.confidencePassed;
-
-  // The honest bound on where a complete score could sit: missing indicators
-  // could be anywhere from zero to maximum pressure.
   const rangeLow = round(observedPressure, 1);
   const rangeHigh = round(observedPressure + missingWeight * 100, 1);
-
   const headlineScore = publishable
     ? round(Math.min(100, observedPressure + overlay.overlay), 1)
     : null;
@@ -297,7 +253,6 @@ export function calculateSnapshot({
     methodologyVersion: METHODOLOGY_VERSION,
     asOf,
     generatedAt: new Date().toISOString(),
-
     publication: {
       status: publishable ? "published" : "suppressed",
       headlineScore,
@@ -310,7 +265,6 @@ export function calculateSnapshot({
           `${PUBLICATION_GATES.minConfidence * 100}% confidence.`,
       gates
     },
-
     structural: {
       observedPressure: round(observedPressure, 1),
       availableWeight: round(availableWeight, 4),
@@ -321,27 +275,23 @@ export function calculateSnapshot({
         "actually measured, so with incomplete coverage it cannot reach 100 and is not a headline " +
         "score. The range shows where a complete score could fall."
     },
-
     acute: {
       overlay: overlay.overlay,
       cap: overlay.cap,
       events: overlay.events,
       note: "The reviewed-event system is not implemented; no event can currently change the score."
     },
-
     confidence: {
       score: round(confidence, 4),
       percent: round(confidence * 100, 1),
       note: "Evidence health: Σ(weight × quality × freshness × geographic coverage). Not a statistical confidence interval."
     },
-
     coverage: {
       indicatorsAvailable: available.length,
       indicatorsTotal: indicators.length,
       missingIndicators: indicators.filter((i) => !i.available).map((i) => i.id),
       byDomain: [...byDomain.values()]
     },
-
     indicators
   };
 }
