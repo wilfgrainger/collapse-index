@@ -97,3 +97,51 @@
 **Decision:** Historical charts must identify whether they are illustrative, latest-vintage retrospective backcasts or real-time-vintage backcasts. Methodology and source breaks are marked.
 
 **Reason:** Revised official data can make past conditions look different from what was known at the time. The distinction is material to interpretation.
+
+## D-017 — N3Y6 is an annual series, not quarterly
+
+**Decision:** Declare and collect ONS `N3Y6/QNA` (GDP per head, year-on-year growth, CVM SA) at **annual** frequency.
+
+**Reason:** `DATA_ACQUISITION_PLAN.md` §1 assumed quarterly cadence. The live payload publishes 70 annual points and zero quarterly points, so the assumption was wrong. The series sits inside the quarterly national accounts dataset — which is what made quarterly plausible — but its own observations are annual, revised by successive QNA releases. The collector fails loudly if a quarterly frequency is declared, and a contract test pins this so a future change is caught rather than assumed.
+
+**Consequence:** GDP per capita growth carries an annual cadence (365 days, 45-day grace, 550-day hard expiry) and a reference period of a whole calendar year. It is the slowest-moving indicator in the set.
+
+## D-018 — Industrial disruption requires a versioned employment denominator
+
+**Decision:** Add ONS `MGRZ/LMS` (people in employment, thousands) as a fifth collected series, used only as a denominator, and score `BBFW` as working days lost per 1,000 employed people per month.
+
+**Reason:** `BBFW` is a count in thousands of days. A count cannot be placed on a pressure curve without normalisation, and the acquisition plan requires a versioned denominator. Recording the denominator's own reference period, publication date and evidence hash on every derived observation means a later revision to employment cannot silently rewrite a published rate.
+
+**Consequence:** The first tranche is five sources, not four. `MGRZ` is never scored directly and has no indicator of its own. Where the numerator's monthly period and the denominator's rolling-quarter period do not align exactly, the observation records whether the match was exact.
+
+## D-019 — Rolling three-month estimates keep their true reference period
+
+**Decision:** A Labour Force Survey point labelled `2026 APR` is stored with the period 2026-03-01 to 2026-05-31, driven by the payload's own `monthLabelStyle` field.
+
+**Reason:** ONS labels rolling three-month averages with their middle month. Storing that label as a single month would misdate every labour-market observation by design, and would make the series look a month fresher than it is. The parser also quarantines a release if a series starts or stops describing itself as a three-month average, because that is a definitional change.
+
+## D-020 — Use the ONS time-series JSON endpoint rather than generated CSV
+
+**Decision:** Collect from `https://www.ons.gov.uk/{path}/timeseries/{cdid}/{dataset}/data`.
+
+**Reason:** The acquisition plan proposed the CSV generator. The JSON endpoint returns the same observations plus a `description` block carrying the CDID, dataset, unit, release date and announced next release date. That metadata is what makes identity assertion and source-driven freshness possible, and it removes a CSV parsing step under a tight CPU budget. Payloads are 15–220 KB, well inside the response limit.
+
+## D-021 — Remove the hand-entered prototype dataset entirely
+
+**Decision:** Migration `0002` drops the v0.1 `observations`, `events`, `snapshots` and `ingestion_runs` tables, and the prototype seed, demo module and illustrative backcast are deleted rather than retained behind a flag.
+
+**Reason:** ROADMAP release 0.2 requires removing hand-entered values from headline eligibility. Leaving them reachable behind a mode flag preserves the risk that a concept-brief number is served as evidence. No production D1 database existed — `wrangler.jsonc` bound none — so nothing observed was lost. `ingestion_runs` had to be dropped explicitly because 0001 created it with a different shape that `CREATE TABLE IF NOT EXISTS` would have silently preserved.
+
+**Consequence:** With no database bound, the site serves a bundled capture generated from committed ONS fixtures: real values and real payload hashes, with a frozen retrieval date that the response and the interface both declare. The history endpoint returns an empty series rather than an illustrative one.
+
+## D-022 — MGSX and MGRZ are treated as official statistics in development
+
+**Decision:** Assign the LFS-derived series a quality factor of 0.90 rather than the 1.00 given to accredited statistics.
+
+**Reason:** Labour Force Survey estimates carry known response-rate problems and are published as official statistics in development. CPI (`D7G7`) and the national accounts series (`N3Y6`) are treated as accredited. The distinction is recorded per source so it can be revised in one place when ONS reclassifies them.
+
+## D-023 — Collector maturity is tracked separately from evidence state
+
+**Decision:** Observations from the four ONS collectors are written as `verified`, while `releasesObserved` is exposed per collector on the evidence-health endpoint.
+
+**Reason:** `SOURCE_REGISTER.md` requires validation across at least two published releases before a source is production-ready. That is a property of the collector accumulating over time, not of an individual observation whose identity, units, period, hash and parser have all been checked. Separating the two avoids either overstating an observation or understating a validated one. The headline is suppressed by the availability gate regardless, so nothing is publicly overclaimed while maturity accrues.

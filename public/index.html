@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A transparent UK national stability and systemic stress monitor built from public evidence.">
-  <meta name="theme-color" content="#0c1522">
+  <meta name="description" content="A transparent UK systemic-pressure monitor built from official statistics, with every source, hash and gap on show.">
+  <meta name="theme-color" content="#08111c">
   <title>UK Stability Monitor</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -20,14 +20,14 @@
         <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
         <span>
           <strong>UK Stability Monitor</strong>
-          <small>Collapse Index · methodology prototype</small>
+          <small>Evidence build · alpha</small>
         </span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#drivers">Drivers</a>
-        <a href="#history">History</a>
+        <a href="#indicators">Indicators</a>
+        <a href="#evidence">Evidence</a>
         <a href="/methodology.html">Methodology</a>
-        <a href="/api/v1/index">API</a>
+        <a href="/api/v1/current">API</a>
       </nav>
     </div>
   </header>
@@ -35,38 +35,56 @@
   <main id="main">
     <section class="hero shell" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">National systemic pressure · updated daily</p>
-        <h1 id="hero-title">How much strain is the UK under?</h1>
-        <p class="lede">A single, inspectable score combining economic, social, institutional, health and environmental pressure. Higher means more strain—not a prediction that Britain will collapse.</p>
-        <div class="prototype-notice" id="prototype-notice" role="status">
-          <strong>Prototype data.</strong> The calculation works; several seed observations still require independent source verification before editorial launch.
-        </div>
+        <p class="eyebrow">Observable systemic pressure on the UK</p>
+        <h1 id="hero-title">There is no headline score yet.</h1>
+        <p class="lede">
+          This monitor measures pressure on the UK's economic, household, institutional, public-service
+          and environmental systems. Four of its ten indicators are collected from official statistics.
+          The other six are not, so no headline is published — showing one would imply a completeness
+          that does not exist.
+        </p>
+        <div class="notice" id="provenance-notice" role="status">Loading the current evidence state…</div>
       </div>
 
-      <div class="score-panel" aria-live="polite">
-        <div class="score-ring" id="score-ring" style="--score: 0; --level-colour: #8a96a8">
-          <div class="score-ring-inner">
-            <span class="score-label">Stress score</span>
-            <strong id="score-value">—</strong>
-            <span class="score-scale">out of 100</span>
-          </div>
+      <div class="status-panel" aria-live="polite">
+        <div class="status-head">
+          <span class="status-pill" id="status-pill">Checking…</span>
+          <p id="status-reason">Reading the latest materialised snapshot.</p>
         </div>
-        <div class="score-summary">
-          <div>
-            <span class="status-dot" id="status-dot"></span>
-            <strong id="level-label">Loading…</strong>
+
+        <div class="gauge" id="gauge">
+          <p class="gauge-title">Where a complete score could fall</p>
+          <div class="gauge-track" role="img" id="gauge-figure" aria-label="Loading pressure range">
+            <span class="gauge-span" id="gauge-span"></span>
+            <span class="gauge-measured" id="gauge-measured"></span>
           </div>
-          <p id="level-summary">Calculating the latest available evidence.</p>
-          <dl>
-            <div><dt>Confidence</dt><dd id="confidence-value">—</dd></div>
-            <div><dt>Hard-data score</dt><dd id="base-score">—</dd></div>
-            <div><dt>Event overlay</dt><dd id="event-overlay">—</dd></div>
-          </dl>
+          <div class="gauge-scale"><span>0</span><span>50</span><span>100</span></div>
+          <p class="gauge-note" id="gauge-note">
+            The lower bound assumes every uncollected indicator sits at zero pressure; the upper bound
+            assumes all of them are at maximum. The truth is somewhere inside.
+          </p>
         </div>
+
+        <dl class="status-stats">
+          <div><dt>Measured pressure</dt><dd id="stat-pressure">—</dd></div>
+          <div><dt>Evidence confidence</dt><dd id="stat-confidence">—</dd></div>
+          <div><dt>Indicator coverage</dt><dd id="stat-coverage">—</dd></div>
+          <div><dt>Acute overlay</dt><dd id="stat-overlay">—</dd></div>
+        </dl>
       </div>
     </section>
 
-    <section class="signal-strip" aria-label="Index interpretation">
+    <section class="equation-strip" aria-label="How the score is composed">
+      <div class="shell equation">
+        <div><strong id="eq-structural">—</strong><span>structural pressure<small>fixed weights, never renormalised</small></span></div>
+        <em aria-hidden="true">+</em>
+        <div><strong id="eq-acute">—</strong><span>acute overlay<small>reviewed events, capped at 8</small></span></div>
+        <em aria-hidden="true">=</em>
+        <div class="equation-result"><strong id="eq-headline">—</strong><span>headline<small id="eq-headline-note">withheld until the gates pass</small></span></div>
+      </div>
+    </section>
+
+    <section class="signal-strip" aria-label="What each level would mean">
       <div class="shell signal-grid">
         <div><span class="signal stable"></span><strong>0–24</strong><small>Stable</small></div>
         <div><span class="signal guarded"></span><strong>25–39</strong><small>Guarded</small></div>
@@ -77,71 +95,80 @@
       </div>
     </section>
 
-    <section class="section shell" id="drivers" aria-labelledby="drivers-title">
+    <section class="section shell" id="indicators" aria-labelledby="indicators-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">What is moving the score</p>
-          <h2 id="drivers-title">Ten pressure indicators</h2>
+          <p class="eyebrow">The ten indicators</p>
+          <h2 id="indicators-title">What is measured, and what is missing</h2>
         </div>
-        <p>Each indicator keeps its true observation date. Old data lowers confidence instead of pretending to be current.</p>
+        <p>
+          Every indicator keeps its fixed weight whether or not it has data. A missing indicator lowers
+          coverage and confidence; it never hands its weight to the others.
+        </p>
       </div>
-      <div class="indicator-grid" id="indicator-grid" aria-live="polite"></div>
+      <div class="indicator-grid" id="indicator-grid" aria-live="polite">
+        <p class="loading">Loading indicators…</p>
+      </div>
     </section>
 
-    <section class="section history-section" id="history" aria-labelledby="history-title">
+    <section class="section evidence-section" id="evidence" aria-labelledby="evidence-title">
       <div class="shell">
         <div class="section-heading inverse">
           <div>
-            <p class="eyebrow">Longer view</p>
-            <h2 id="history-title">Pressure over time</h2>
+            <p class="eyebrow">Collector health</p>
+            <h2 id="evidence-title">Every number, traced to its source</h2>
           </div>
-          <p id="history-warning">Loading historical context…</p>
+          <p>
+            Each collector asserts the exact ONS series identifier before it will write anything, archives
+            the payload it parsed, and records the SHA-256 of those bytes against the observation.
+          </p>
         </div>
-        <div class="chart-card">
-          <div class="chart-meta">
-            <span>0 · low pressure</span>
-            <span>100 · exceptional pressure</span>
-          </div>
-          <div class="chart-wrap" id="history-chart" role="img" aria-label="UK stability stress score over time"></div>
-          <div class="chart-events" aria-hidden="true">
-            <span style="left: 18%">Covid</span>
-            <span style="left: 56%">Energy shock</span>
-            <span style="left: 86%">Current</span>
-          </div>
+
+        <div class="table-wrap">
+          <table class="evidence-table">
+            <caption class="visually-hidden">Collector health by source, showing series, last outcome and expected next release</caption>
+            <thead>
+              <tr>
+                <th scope="col">Series</th>
+                <th scope="col">Indicator</th>
+                <th scope="col">Coverage</th>
+                <th scope="col">Last outcome</th>
+                <th scope="col">Published</th>
+                <th scope="col">Next expected</th>
+              </tr>
+            </thead>
+            <tbody id="collector-rows">
+              <tr><td colspan="6">Loading collector health…</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    <section class="section shell evidence-grid" aria-labelledby="evidence-title">
-      <article class="evidence-card">
-        <p class="eyebrow">Recent evidence</p>
-        <h2 id="evidence-title">Events and signals</h2>
-        <div id="event-list" class="event-list"></div>
-      </article>
-
+    <section class="section shell method-grid" aria-labelledby="guardrails-title">
       <article class="method-card">
-        <p class="eyebrow">Methodology guardrails</p>
-        <h2>Designed to resist sensationalism</h2>
+        <p class="eyebrow">Guardrails</p>
+        <h2 id="guardrails-title">Built to be checkable, not dramatic</h2>
         <ul>
-          <li>Hard data and qualitative events are separated.</li>
-          <li>Event effects are reviewed, disclosed, capped and decay over time.</li>
-          <li>Missing data reduces confidence rather than being quietly invented.</li>
-          <li>Every scoring threshold is public and versioned.</li>
+          <li>Fixed weights: missing data lowers coverage, never inflates what remains.</li>
+          <li>A blank source cell stays blank. It is never read as zero.</li>
+          <li>An observation cannot exist without the hash of the bytes it came from.</li>
+          <li>Rolling three-month estimates are stored with their true reference period.</li>
+          <li>England-only evidence carries a population factor and cannot pass as UK-wide.</li>
+          <li>Publication gates are public: 90% of fixed weight and 70% confidence.</li>
         </ul>
         <a class="button" href="/methodology.html">Read the methodology</a>
       </article>
-    </section>
 
-    <section class="section shell data-quality" aria-labelledby="quality-title">
-      <div>
-        <p class="eyebrow">Evidence quality</p>
-        <h2 id="quality-title">The confidence score matters as much as the headline</h2>
-      </div>
-      <div class="quality-stats">
-        <div><strong id="available-count">—</strong><span>indicators available</span></div>
-        <div><strong id="stale-count">—</strong><span>stale indicators</span></div>
-        <div><strong id="generated-at">—</strong><span>calculated</span></div>
-      </div>
+      <article class="gaps-card">
+        <p class="eyebrow">Not yet collected</p>
+        <h2>The six missing indicators</h2>
+        <p class="description">
+          These hold 60% of the fixed weight between them. Each is blocked on a definitional decision, not
+          on engineering — which is why none has been filled with a placeholder.
+        </p>
+        <ul id="gap-list"><li>Loading…</li></ul>
+      </article>
     </section>
   </main>
 
@@ -149,16 +176,33 @@
     <div class="shell footer-inner">
       <div>
         <strong>UK Stability Monitor</strong>
-        <p>An open methodology experiment in public-interest data communication.</p>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
       </div>
       <div class="footer-links">
         <a href="/methodology.html">Methodology</a>
+        <a href="/api/v1/evidence-health">Evidence health</a>
+        <a href="/api/v1/sources">Sources</a>
         <a href="/api/v1/openapi.json">OpenAPI</a>
         <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
       </div>
     </div>
   </footer>
 
-  <noscript>This dashboard requires JavaScript to calculate and display the index breakdown. The API remains available at /api/v1/index.</noscript>
+  <noscript>
+    <div class="shell noscript-panel">
+      <h2>This dashboard renders with JavaScript</h2>
+      <p>The underlying data is available without it, as JSON:</p>
+      <ul>
+        <li><a href="/api/v1/current">/api/v1/current</a> — pressure, confidence, gates and all ten indicators</li>
+        <li><a href="/api/v1/evidence-health">/api/v1/evidence-health</a> — collector health and freshness</li>
+        <li><a href="/api/v1/sources">/api/v1/sources</a> — exact series identifiers and licences</li>
+        <li><a href="/api/v1/methodology">/api/v1/methodology</a> — weights, curves and rationale</li>
+      </ul>
+    </div>
+  </noscript>
 </body>
 </html>

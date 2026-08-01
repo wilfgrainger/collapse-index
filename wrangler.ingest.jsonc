@@ -1,0 +1,42 @@
+// Ingestion Worker: scheduled source retrieval, validation and persistence.
+//
+// Deliberately has no fetch handler, so there is no public route that can
+// trigger a write. It is the only Worker with R2 write access.
+//
+// Cron budget (docs/CLOUDFLARE_PLATFORM_DESIGN.md): the account limit is five
+// triggers and is shared with other projects. Only the daily official-source
+// check is enabled — the hourly environmental trigger is added when that
+// collector exists, not before.
+//
+// Before deploying, replace the placeholder resource identifiers below.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "collapse-index-ingest",
+  "main": "src/ingest/index.js",
+  "compatibility_date": "2026-07-27",
+  "workers_dev": false,
+
+  "triggers": {
+    // 08:15 UTC: after the 07:00 ONS release window, before the working day.
+    "crons": ["15 8 * * *"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "collapse-index",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "collapse-index-evidence"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

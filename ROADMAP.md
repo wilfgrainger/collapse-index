@@ -29,20 +29,20 @@
 
 ### Evidence foundation
 
-- [ ] implement canonical source, release, evidence, observation and validation schemas
-- [ ] implement immutable D1 observation versions and snapshot-component lineage
-- [ ] implement private R2 source-payload archive with SHA-256 deduplication
-- [ ] expose collector and evidence health
-- [ ] remove hand-entered prototype values from headline eligibility
+- [x] implement canonical source, release, evidence, observation and validation schemas
+- [x] implement immutable D1 observation versions and snapshot-component lineage
+- [x] implement private R2 source-payload archive with SHA-256 deduplication
+- [x] expose collector and evidence health
+- [x] remove hand-entered prototype values from headline eligibility
 
 ### First exact-series tranche
 
-- [ ] implement ONS CPI collector for `D7G7/MM23`
-- [ ] implement ONS unemployment collector for `MGSX/LMS`
-- [ ] implement ONS real GDP-per-head collector for `N3Y6`
-- [ ] implement ONS working-days-lost collector for `BBFW/LMS`
-- [ ] version ONS population denominators where derived rates require them
-- [ ] archive fixtures and validate at least two releases per source
+- [x] implement ONS CPI collector for `D7G7/MM23`
+- [x] implement ONS unemployment collector for `MGSX/LMS`
+- [x] implement ONS real GDP-per-head collector for `N3Y6` (annual — see D-017)
+- [x] implement ONS working-days-lost collector for `BBFW/LMS`
+- [x] version ONS population denominators where derived rates require them (`MGRZ/LMS` — see D-018)
+- [ ] archive fixtures and validate at least two releases per source — one release archived per source; the second arrives with the August ONS releases
 
 ### Remaining core indicators
 
@@ -55,12 +55,12 @@
 
 ### Methodology and interface
 
-- [ ] implement fixed-weight structural score without missing-data renormalisation
-- [ ] implement separate evidence confidence and publication gates
-- [ ] implement two-sided inflation pressure curve
-- [ ] lower and document acute-overlay cap at eight points
-- [ ] show structural baseline, acute overlay and confidence separately
-- [ ] add evidence-health and suppressed-headline states
+- [x] implement fixed-weight structural score without missing-data renormalisation
+- [x] implement separate evidence confidence and publication gates
+- [x] implement two-sided inflation pressure curve
+- [x] lower and document acute-overlay cap at eight points
+- [x] show structural baseline, acute overlay and confidence separately
+- [x] add evidence-health and suppressed-headline states
 
 ## Release 0.3 — Reproducible history and robustness
 
