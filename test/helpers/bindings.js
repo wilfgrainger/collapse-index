@@ -81,18 +81,35 @@ class TestStatement {
   }
 }
 
-export async function createTestDatabase() {
+async function migrationFiles() {
+  return (await readdir(MIGRATIONS_DIR)).filter((name) => name.endsWith(".sql")).sort();
+}
+
+export async function applyTestMigration(database, file) {
+  const sql = await readFile(join(MIGRATIONS_DIR, file), "utf8");
+  database._raw.exec(sql);
+  database._migrationsApplied.push(file);
+}
+
+/**
+ * Applies migrations from empty, optionally stopping after one named file so a
+ * test can populate an older schema and prove the next migration preserves it.
+ */
+export async function createTestDatabase({ through = null } = {}) {
   const db = new DatabaseSync(":memory:");
   db.exec("PRAGMA foreign_keys = ON");
 
-  const files = (await readdir(MIGRATIONS_DIR)).filter((name) => name.endsWith(".sql")).sort();
-  for (const file of files) {
-    db.exec(await readFile(join(MIGRATIONS_DIR, file), "utf8"));
+  const allFiles = await migrationFiles();
+  const selected = through
+    ? allFiles.slice(0, allFiles.indexOf(through) + 1)
+    : allFiles;
+  if (through && !selected.includes(through)) {
+    throw new Error(`unknown migration: ${through}`);
   }
 
-  return {
+  const wrapper = {
     _raw: db,
-    _migrationsApplied: files,
+    _migrationsApplied: [],
     prepare(sql) {
       return new TestStatement(db, sql);
     },
@@ -102,6 +119,9 @@ export async function createTestDatabase() {
       return results;
     }
   };
+
+  for (const file of selected) await applyTestMigration(wrapper, file);
+  return wrapper;
 }
 
 export function createTestBucket() {
