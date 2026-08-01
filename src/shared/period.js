@@ -7,9 +7,6 @@
  * further complication — a point labelled `2026 APR` is really the rolling
  * three-month average for March to May, which the payload signals through
  * `description.monthLabelStyle`.
- *
- * Getting this wrong would silently misdate every labour-market observation,
- * so rolling periods are represented by their true start and end.
  */
 
 const MONTH_INDEX = Object.freeze({
@@ -37,6 +34,26 @@ function lastDayOfMonth(year, monthIndex) {
 }
 
 /**
+ * Returns the civil date represented by a timestamp in the requested timezone.
+ * ONS release timestamps are UTC instants but UK publication dates are London
+ * civil dates, which differ from UTC around midnight during British Summer Time.
+ */
+export function dateInTimeZone(value, timeZone = "Europe/London") {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  if (!values.year || !values.month || !values.day) return null;
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+/**
  * Parses an ONS period label into an explicit interval.
  *
  * @param {string} label e.g. "2025", "2026 Q2", "2026 JUN"
@@ -47,7 +64,6 @@ export function parseOnsPeriod(label, options = {}) {
   const raw = String(label ?? "").trim().toUpperCase();
   if (!raw) throw new Error("empty ONS period label");
 
-  // Annual: "2025"
   const annual = /^(\d{4})$/.exec(raw);
   if (annual) {
     const year = Number(annual[1]);
@@ -59,7 +75,6 @@ export function parseOnsPeriod(label, options = {}) {
     };
   }
 
-  // Quarterly: "2026 Q2"
   const quarterly = /^(\d{4})\s+(Q[1-4])$/.exec(raw);
   if (quarterly) {
     const year = Number(quarterly[1]);
@@ -73,7 +88,6 @@ export function parseOnsPeriod(label, options = {}) {
     };
   }
 
-  // Monthly: "2026 JUN"
   const monthly = /^(\d{4})\s+([A-Z]{3})$/.exec(raw);
   if (monthly) {
     const year = Number(monthly[1]);
@@ -81,7 +95,6 @@ export function parseOnsPeriod(label, options = {}) {
     if (monthIndex === undefined) throw new Error(`unrecognised ONS month: ${label}`);
 
     if (options.rollingThreeMonth) {
-      // A point labelled `2026 APR` covers March to May inclusive.
       const start = new Date(Date.UTC(year, monthIndex - 1, 1));
       const endMonth = new Date(Date.UTC(year, monthIndex + 1, 1));
       const endYear = endMonth.getUTCFullYear();
@@ -107,8 +120,6 @@ export function parseOnsPeriod(label, options = {}) {
 
 /**
  * Parses the free-text `nextRelease` field ONS returns, e.g. "19 August 2026".
- * Returns null when ONS gives a non-date placeholder such as "To be announced",
- * which must not be mistaken for "no release expected".
  */
 export function parseNextRelease(text) {
   const raw = String(text ?? "").replace(/\s+/g, " ").trim();
