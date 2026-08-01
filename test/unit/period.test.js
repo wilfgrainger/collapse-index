@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { FREQUENCY, daysBetween, parseNextRelease, parseOnsPeriod } from "../../src/shared/period.js";
+import { FREQUENCY, dateInTimeZone, daysBetween, parseNextRelease, parseOnsPeriod } from "../../src/shared/period.js";
 
 test("annual labels become whole-year intervals", () => {
   assert.deepEqual(parseOnsPeriod("2025"), {
@@ -24,12 +24,11 @@ test("quarterly labels become three-month intervals", () => {
 test("monthly labels respect month length", () => {
   assert.equal(parseOnsPeriod("2026 JUN").end, "2026-06-30");
   assert.equal(parseOnsPeriod("2026 JUL").end, "2026-07-31");
-  assert.equal(parseOnsPeriod("2024 FEB").end, "2024-02-29", "2024 is a leap year");
+  assert.equal(parseOnsPeriod("2024 FEB").end, "2024-02-29");
   assert.equal(parseOnsPeriod("2026 FEB").end, "2026-02-28");
 });
 
 test("a rolling three-month point covers the month either side of its label", () => {
-  // This is the misdating trap: ONS labels the Mar-May estimate "2026 APR".
   const period = parseOnsPeriod("2026 APR", { rollingThreeMonth: true });
   assert.equal(period.frequency, FREQUENCY.ROLLING_QUARTER);
   assert.equal(period.start, "2026-03-01");
@@ -55,9 +54,15 @@ test("unrecognised period labels throw rather than guess", () => {
 
 test("next-release text is parsed, and placeholders return null", () => {
   assert.equal(parseNextRelease("19 August 2026"), "2026-08-19");
-  assert.equal(parseNextRelease("18 August  2026"), "2026-08-18", "collapses doubled spaces");
+  assert.equal(parseNextRelease("18 August  2026"), "2026-08-18");
   assert.equal(parseNextRelease("To be announced"), null);
   assert.equal(parseNextRelease(null), null);
+});
+
+test("ONS midnight timestamps resolve to the UK publication date", () => {
+  assert.equal(dateInTimeZone("2026-07-21T23:00:00.000Z"), "2026-07-22");
+  assert.equal(dateInTimeZone("2026-01-20T00:00:00.000Z"), "2026-01-20");
+  assert.equal(dateInTimeZone("not-a-date"), null);
 });
 
 test("daysBetween is signed and whole", () => {
