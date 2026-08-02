@@ -36,7 +36,7 @@ Make the evidence foundation directly reusable by researchers, reviewers and con
 
 ### Non-functional
 
-- Export generation must be deterministic for identical stored state.
+- Tabular field order and row ordering must be deterministic for identical stored data. Response-generation timestamps and operational provenance may legitimately vary between requests.
 - Query limits must be bounded and require no new service or dependency.
 - CSV strings must not execute as spreadsheet formulas when opened by common spreadsheet software.
 - Private R2 payload contents must remain private.
@@ -77,8 +77,8 @@ The current CSV includes all ten indicators because absence is a material part o
 
 ## Security and abuse model
 
-- Formula injection: string cells beginning with `=`, `+`, `-` or `@` are prefixed with an apostrophe before CSV quoting. Numeric values remain numeric.
-- Resource exhaustion: row counts are bounded by server-side maximums.
+- Formula injection: string cells beginning with `=`, `+`, `-` or `@` after any leading whitespace are prefixed with an apostrophe before CSV quoting. Numeric values remain numeric.
+- Resource exhaustion: row counts are bounded by server-side maximums and malformed numeric limits fall back to safe defaults.
 - History laundering: canonical history routes return `503` without D1, even if bootstrap mode is enabled.
 - Private evidence disclosure: no R2 object body or object key is included.
 - Cache confusion: degraded current responses retain warning and snapshot-age metadata; history and exports use explicit cache policies.
