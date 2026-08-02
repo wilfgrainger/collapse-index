@@ -10,8 +10,8 @@ test("CSV cells escape quotes and preserve numeric values", () => {
 });
 
 test("CSV strings neutralise spreadsheet formula injection", () => {
-  for (const value of ["=1+1", "+cmd", "-2+3", "@SUM(A1:A2)", "  =HYPERLINK(\"x\")"]) {
-    assert.match(csvCell(value), /^"'/, value);
+  for (const value of ["=1+1", "+cmd", "-2+3", "@SUM(A1:A2)", "  =HYPERLINK(\"x\")", "\n=1+1"]) {
+    assert.match(csvCell(value), /^"'/, JSON.stringify(value));
   }
   assert.equal(csvCell(-2.5), "-2.5", "real numeric values remain numeric");
 });
@@ -26,9 +26,12 @@ test("CSV output is deterministic, labelled and spreadsheet compatible", () => {
   assert.equal(csv, '\uFEFF"Indicator","Value"\r\n"cpi_inflation",2.6\r\n');
 });
 
-test("boundedInteger applies defaults and hard limits", () => {
+test("boundedInteger applies defaults, strict parsing and hard limits", () => {
   assert.equal(boundedInteger(undefined, 365), 365);
   assert.equal(boundedInteger("0", 365), 1);
+  assert.equal(boundedInteger("-4", 365), 1);
   assert.equal(boundedInteger("9999", 365, { max: 500 }), 500);
   assert.equal(boundedInteger("20", 365), 20);
+  assert.equal(boundedInteger("20abc", 365), 365);
+  assert.equal(boundedInteger("1.5", 365), 365);
 });
