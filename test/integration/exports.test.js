@@ -41,12 +41,13 @@ function request(env, path, options = {}) {
 
 test("current export publishes all ten indicators with provenance", async () => {
   const response = await request(await ingestedEnv(), "/api/v1/exports/current.csv");
+  const bytes = new Uint8Array(await response.clone().arrayBuffer());
   const body = await response.text();
 
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/csv/);
   assert.match(response.headers.get("content-disposition") ?? "", /uk-stability-current-2026-08-01\.csv/);
-  assert.ok(body.startsWith("\uFEFF"));
+  assert.deepEqual([...bytes.slice(0, 3)], [0xef, 0xbb, 0xbf]);
   assert.match(body, /"indicator_id"/);
   assert.match(body, /"cpi_inflation"/);
   assert.match(body, /"trust_in_government"/);
