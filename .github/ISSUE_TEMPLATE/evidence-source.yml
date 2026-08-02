@@ -1,0 +1,102 @@
+name: Evidence source proposal
+description: Propose or correct an official source, indicator definition or collector contract
+title: "Evidence: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for source and collector proposals. A plausible headline value is not enough: the project needs an exact, reproducible evidence contract.
+
+  - type: input
+    id: indicator
+    attributes:
+      label: Indicator or evidence role
+      description: Name the existing indicator, proposed indicator or denominator.
+      placeholder: household_food_insecurity
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: Official provider
+      placeholder: Food Standards Agency
+    validations:
+      required: true
+
+  - type: input
+    id: source_url
+    attributes:
+      label: Exact source or dataset URL
+      description: Link to the official dataset, API, table or release page.
+    validations:
+      required: true
+
+  - type: textarea
+    id: identity
+    attributes:
+      label: Exact identity and definition
+      description: Include dataset/table/series/variable identifiers, population, numerator, denominator and exclusions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: period
+    attributes:
+      label: Time semantics
+      description: Explain reference period, publication date, cadence, revisions and any structural breaks.
+    validations:
+      required: true
+
+  - type: textarea
+    id: geography
+    attributes:
+      label: Geography and coverage
+      description: State the nations/population covered and what must not be described as UK-wide.
+    validations:
+      required: true
+
+  - type: input
+    id: licence
+    attributes:
+      label: Licence or reuse terms
+      placeholder: Open Government Licence v3.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: machine
+    attributes:
+      label: Machine-readable resource
+      description: Give the direct API/CSV/JSON resource, content type and expected size when known. Do not guess undocumented paths.
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure
+    attributes:
+      label: Known failure and comparability risks
+      description: Cover blanks, suppression, schema drift, revisions, methodology changes and source availability.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Verification evidence
+      description: List releases checked, fixtures available, calculations reproduced and any unresolved questions.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: declaration
+    attributes:
+      label: Proposal checks
+      options:
+        - label: I have not converted missing or suppressed data to zero.
+          required: true
+        - label: I have distinguished source geography from UK-wide coverage.
+          required: true
+        - label: I have identified the primary official source rather than relying only on a secondary article.
+          required: true

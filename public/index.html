@@ -9,6 +9,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/downloads.css">
   <script src="/app.js" type="module"></script>
 </head>
 <body>
@@ -26,6 +27,7 @@
       <nav aria-label="Primary navigation">
         <a href="#indicators">Indicators</a>
         <a href="#evidence">Evidence</a>
+        <a href="#downloads">Downloads</a>
         <a href="/methodology.html">Methodology</a>
         <a href="/api/v1/current">API</a>
       </nav>
@@ -145,6 +147,69 @@
       </div>
     </section>
 
+    <section class="section shell" id="downloads" aria-labelledby="downloads-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Open evidence</p>
+          <h2 id="downloads-title">Download what the monitor actually knows</h2>
+        </div>
+        <p>
+          The exports keep source identifiers, publication dates, evidence hashes and revision lineage.
+          Daily snapshots are recalculation dates, not claims that every underlying statistic changed that day.
+        </p>
+      </div>
+
+      <div class="download-grid">
+        <article class="download-card featured">
+          <div>
+            <p class="download-kicker">Start here</p>
+            <h3>Current evidence snapshot</h3>
+            <p>All ten fixed-weight indicators, including explicit unavailable rows and the provenance behind every collected value.</p>
+          </div>
+          <div class="download-actions">
+            <a class="button" href="/api/v1/exports/current.csv" download>Download current CSV</a>
+            <a href="/api/v1/current">View current JSON</a>
+          </div>
+        </article>
+
+        <article class="download-card">
+          <div>
+            <p class="download-kicker">Canonical history</p>
+            <h3>Observation versions</h3>
+            <p>Verified and revised observations from D1, including period, transformation, denominator and supersession details.</p>
+          </div>
+          <div class="download-actions">
+            <a href="/api/v1/exports/observations.csv" download>CSV</a>
+            <a href="/api/v1/exports/observations.json">JSON</a>
+          </div>
+        </article>
+
+        <article class="download-card">
+          <div>
+            <p class="download-kicker">Daily materialisations</p>
+            <h3>Snapshot history</h3>
+            <p>One latest materialisation per civil day and methodology version, with pressure, confidence, range and publication state.</p>
+          </div>
+          <div class="download-actions">
+            <a href="/api/v1/exports/snapshots.csv" download>CSV</a>
+            <a href="/api/v1/exports/snapshots.json">JSON</a>
+          </div>
+        </article>
+
+        <article class="download-card">
+          <div>
+            <p class="download-kicker">Read before reuse</p>
+            <h3>Export manifest</h3>
+            <p>Machine-readable scope, limitations, licences, operational provenance and links to every export.</p>
+          </div>
+          <div class="download-actions">
+            <a href="/api/v1/exports/manifest.json">Open manifest</a>
+            <a href="/api/v1/openapi.json">OpenAPI</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="section shell method-grid" aria-labelledby="guardrails-title">
       <article class="method-card">
         <p class="eyebrow">Guardrails</p>
@@ -186,6 +251,7 @@
         <a href="/methodology.html">Methodology</a>
         <a href="/api/v1/evidence-health">Evidence health</a>
         <a href="/api/v1/sources">Sources</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
         <a href="/api/v1/openapi.json">OpenAPI</a>
         <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
       </div>
@@ -195,12 +261,14 @@
   <noscript>
     <div class="shell noscript-panel">
       <h2>This dashboard renders with JavaScript</h2>
-      <p>The underlying data is available without it, as JSON:</p>
+      <p>The underlying data is available without it:</p>
       <ul>
-        <li><a href="/api/v1/current">/api/v1/current</a> — pressure, confidence, gates and all ten indicators</li>
-        <li><a href="/api/v1/evidence-health">/api/v1/evidence-health</a> — collector health and freshness</li>
-        <li><a href="/api/v1/sources">/api/v1/sources</a> — exact series identifiers and licences</li>
-        <li><a href="/api/v1/methodology">/api/v1/methodology</a> — weights, curves and rationale</li>
+        <li><a href="/api/v1/current">Current JSON</a> — pressure, confidence, gates and all ten indicators</li>
+        <li><a href="/api/v1/exports/current.csv">Current CSV</a> — the same ten-indicator snapshot in tabular form</li>
+        <li><a href="/api/v1/exports/manifest.json">Export manifest</a> — scope, limitations and all download links</li>
+        <li><a href="/api/v1/evidence-health">Evidence health</a> — collector health and freshness</li>
+        <li><a href="/api/v1/sources">Sources</a> — exact series identifiers and licences</li>
+        <li><a href="/api/v1/methodology">Methodology</a> — weights, curves and rationale</li>
       </ul>
     </div>
   </noscript>

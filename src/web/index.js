@@ -1,4 +1,4 @@
-/** Public Worker: static assets and read-only JSON API. */
+/** Public Worker: static assets and read-only JSON/CSV API. */
 
 import {
   INDICATORS,
@@ -12,6 +12,7 @@ import { ONS_SOURCES } from "../collectors/ons/registry.js";
 import { GEOGRAPHY_COVERAGE, GEOGRAPHY_LABEL, QUALITY_FACTOR } from "../domain/evidence/states.js";
 import { dateInTimeZone, daysBetween } from "../shared/period.js";
 import * as repo from "../storage/d1/repository.js";
+import { boundedInteger, toCsv } from "./csv.js";
 
 const API_PREFIX = "/api/v1";
 const MAX_SNAPSHOT_AGE_DAYS = 2;
@@ -27,6 +28,11 @@ const SECURITY_HEADERS = Object.freeze({
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
 });
 
+const CORS_HEADERS = Object.freeze({
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Expose-Headers": "Content-Disposition, ETag, Warning, X-Snapshot-Age-Days"
+});
+
 const CACHE = Object.freeze({
   current: "public, max-age=300, s-maxage=300, stale-while-revalidate=900",
   history: "public, max-age=3600, s-maxage=3600",
@@ -34,6 +40,82 @@ const CACHE = Object.freeze({
   health: "public, max-age=60, s-maxage=60",
   none: "no-store"
 });
+
+const CURRENT_EXPORT_COLUMNS = Object.freeze([
+  { key: "snapshotAsOf", label: "snapshot_as_of" },
+  { key: "generatedAt", label: "generated_at" },
+  { key: "methodologyVersion", label: "methodology_version" },
+  { key: "operationalStatus", label: "operational_status" },
+  { key: "indicatorId", label: "indicator_id" },
+  { key: "title", label: "title" },
+  { key: "domain", label: "domain" },
+  { key: "weight", label: "weight" },
+  { key: "available", label: "available" },
+  { key: "value", label: "value" },
+  { key: "unit", label: "unit" },
+  { key: "pressure", label: "pressure" },
+  { key: "contribution", label: "contribution" },
+  { key: "confidenceContribution", label: "confidence_contribution" },
+  { key: "periodStart", label: "period_start" },
+  { key: "periodEnd", label: "period_end" },
+  { key: "periodLabel", label: "period_label" },
+  { key: "geographyCode", label: "geography_code" },
+  { key: "geographyLabel", label: "geography_label" },
+  { key: "freshnessStage", label: "freshness_stage" },
+  { key: "publishedAt", label: "published_at" },
+  { key: "sourceProvider", label: "source_provider" },
+  { key: "sourceCdid", label: "source_cdid" },
+  { key: "sourceDatasetId", label: "source_dataset_id" },
+  { key: "sourceUrl", label: "source_url" },
+  { key: "licence", label: "licence" },
+  { key: "evidenceSha256", label: "evidence_sha256" },
+  { key: "dependencyFingerprint", label: "dependency_fingerprint" },
+  { key: "parserVersion", label: "parser_version" },
+  { key: "unavailableReason", label: "unavailable_reason" }
+]);
+
+const OBSERVATION_EXPORT_COLUMNS = Object.freeze([
+  { key: "id", label: "observation_id" },
+  { key: "indicatorId", label: "indicator_id" },
+  { key: "sourceId", label: "source_id" },
+  { key: "cdid", label: "cdid" },
+  { key: "datasetId", label: "dataset_id" },
+  { key: "rawValue", label: "raw_value" },
+  { key: "rawUnit", label: "raw_unit" },
+  { key: "transformedValue", label: "transformed_value" },
+  { key: "unit", label: "unit" },
+  { key: "frequency", label: "frequency" },
+  { key: "geography", label: "geography" },
+  { key: "seasonalAdjustment", label: "seasonal_adjustment" },
+  { key: "periodStart", label: "period_start" },
+  { key: "periodEnd", label: "period_end" },
+  { key: "periodLabel", label: "period_label" },
+  { key: "publishedAt", label: "published_at" },
+  { key: "expectedNextRelease", label: "expected_next_release" },
+  { key: "retrievedAt", label: "retrieved_at" },
+  { key: "state", label: "state" },
+  { key: "sourceUrl", label: "source_url" },
+  { key: "licence", label: "licence" },
+  { key: "evidenceSha256", label: "evidence_sha256" },
+  { key: "dependencyFingerprint", label: "dependency_fingerprint" },
+  { key: "parserVersion", label: "parser_version" },
+  { key: "denominator", label: "denominator_json" },
+  { key: "supersedesId", label: "supersedes_id" },
+  { key: "createdAt", label: "created_at" }
+]);
+
+const SNAPSHOT_EXPORT_COLUMNS = Object.freeze([
+  { key: "date", label: "as_of_date" },
+  { key: "status", label: "publication_status" },
+  { key: "headlineScore", label: "headline_score" },
+  { key: "level", label: "level" },
+  { key: "observedPressure", label: "observed_pressure" },
+  { key: "availableWeight", label: "available_weight" },
+  { key: "rangeLow", label: "range_low" },
+  { key: "rangeHigh", label: "range_high" },
+  { key: "confidence", label: "confidence" },
+  { key: "methodologyVersion", label: "methodology_version" }
+]);
 
 function runtimeNow(env) {
   return env?.CLOCK_NOW ?? new Date().toISOString();
@@ -45,22 +127,39 @@ function snapshotAgeDays(asOfDate, now) {
   return Number.isFinite(age) ? Math.max(0, age) : null;
 }
 
-function json(payload, { status = 200, cacheControl = CACHE.current, etag = null, extraHeaders = {} } = {}) {
-  const headers = new Headers({
-    "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": "*",
+function responseHeaders(contentType, cacheControl, extraHeaders = {}) {
+  return new Headers({
+    "Content-Type": contentType,
     "Cache-Control": cacheControl,
+    ...CORS_HEADERS,
     ...SECURITY_HEADERS,
     ...extraHeaders
   });
+}
+
+function json(payload, { status = 200, cacheControl = CACHE.current, etag = null, extraHeaders = {} } = {}) {
+  const headers = responseHeaders("application/json; charset=utf-8", cacheControl, extraHeaders);
   if (etag) headers.set("ETag", etag);
   return new Response(`${JSON.stringify(payload, null, 2)}\n`, { status, headers });
+}
+
+function csv(payload, filename, { status = 200, cacheControl = CACHE.history, extraHeaders = {} } = {}) {
+  const headers = responseHeaders("text/csv; charset=utf-8", cacheControl, {
+    "Content-Disposition": `attachment; filename="${filename}"`,
+    ...extraHeaders
+  });
+  return new Response(payload, { status, headers });
 }
 
 function withSecurityHeaders(response) {
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) headers.set(key, value);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+function withoutBodyForHead(request, response) {
+  if (request.method !== "HEAD") return response;
+  return new Response(null, { status: response.status, statusText: response.statusText, headers: response.headers });
 }
 
 function bootstrapEnabled(env) {
@@ -249,6 +348,17 @@ async function evidenceHealthDocument(env) {
   return base;
 }
 
+function exportLinks(origin) {
+  return {
+    currentCsv: `${origin}${API_PREFIX}/exports/current.csv`,
+    observationsJson: `${origin}${API_PREFIX}/exports/observations.json`,
+    observationsCsv: `${origin}${API_PREFIX}/exports/observations.csv`,
+    snapshotsJson: `${origin}${API_PREFIX}/exports/snapshots.json`,
+    snapshotsCsv: `${origin}${API_PREFIX}/exports/snapshots.csv`,
+    manifest: `${origin}${API_PREFIX}/exports/manifest.json`
+  };
+}
+
 function openApiDocument(origin) {
   const path = (summary, options = {}) => ({
     get: {
@@ -273,7 +383,13 @@ function openApiDocument(origin) {
       [`${API_PREFIX}/evidence-health`]: path("Collector health, freshness and publication gates"),
       [`${API_PREFIX}/methodology`]: path("Weights, curves, gates and levels"),
       [`${API_PREFIX}/sources`]: path("Source register with exact series identifiers"),
-      [`${API_PREFIX}/health`]: path("Service health and binding state")
+      [`${API_PREFIX}/health`]: path("Service health and binding state"),
+      [`${API_PREFIX}/exports/manifest.json`]: path("Machine-readable export catalogue and scope notes"),
+      [`${API_PREFIX}/exports/current.csv`]: path("Current ten-indicator snapshot as CSV"),
+      [`${API_PREFIX}/exports/observations.json`]: path("Verified and revised observation history as JSON"),
+      [`${API_PREFIX}/exports/observations.csv`]: path("Verified and revised observation history as CSV"),
+      [`${API_PREFIX}/exports/snapshots.json`]: path("Daily materialised snapshot history as JSON"),
+      [`${API_PREFIX}/exports/snapshots.csv`]: path("Daily materialised snapshot history as CSV")
     }
   };
 }
@@ -356,6 +472,60 @@ function currentExtraHeaders(provenance, compatibility) {
   return headers;
 }
 
+function currentExportRows(snapshot, provenance) {
+  return (snapshot.indicators ?? []).map((indicator) => ({
+    snapshotAsOf: snapshot.asOf,
+    generatedAt: snapshot.generatedAt,
+    methodologyVersion: snapshot.methodologyVersion,
+    operationalStatus: provenance.operationalStatus,
+    indicatorId: indicator.id,
+    title: indicator.title,
+    domain: indicator.domain,
+    weight: indicator.weight,
+    available: indicator.available,
+    value: indicator.value,
+    unit: indicator.unit,
+    pressure: indicator.pressure,
+    contribution: indicator.contribution,
+    confidenceContribution: indicator.confidenceContribution,
+    periodStart: indicator.period?.start,
+    periodEnd: indicator.period?.end,
+    periodLabel: indicator.period?.label,
+    geographyCode: indicator.geography?.code,
+    geographyLabel: indicator.geography?.label,
+    freshnessStage: indicator.freshness?.stage,
+    publishedAt: indicator.freshness?.publishedAt,
+    sourceProvider: indicator.source?.provider,
+    sourceCdid: indicator.source?.cdid,
+    sourceDatasetId: indicator.source?.datasetId,
+    sourceUrl: indicator.source?.url,
+    licence: indicator.source?.licence,
+    evidenceSha256: indicator.source?.evidenceSha256,
+    dependencyFingerprint: indicator.source?.dependencyFingerprint,
+    parserVersion: indicator.source?.parserVersion,
+    unavailableReason: indicator.reason
+  }));
+}
+
+async function observationExportRows(env, limitPerIndicator) {
+  const groups = await Promise.all(
+    INDICATORS.map((indicator) => repo.observationHistory(env, indicator.id, limitPerIndicator))
+  );
+  return groups.flat().sort((a, b) =>
+    a.indicatorId.localeCompare(b.indicatorId) ||
+    a.periodEnd.localeCompare(b.periodEnd) ||
+    a.id - b.id
+  );
+}
+
+function snapshotExportRows(points) {
+  return points.map((point) => ({
+    ...point,
+    rangeLow: point.range?.low,
+    rangeHigh: point.range?.high
+  }));
+}
+
 async function handleCurrent(request, env, compatibility = false) {
   const { snapshot, provenance } = await resolveCurrent(env);
   const extraHeaders = currentExtraHeaders(provenance, compatibility);
@@ -368,10 +538,106 @@ async function handleCurrent(request, env, compatibility = false) {
   }
   const etag = `"${provenance.stateFingerprint ?? provenance.evidenceFingerprint ?? snapshot.generatedAt}-${METHODOLOGY_VERSION}"`;
   if (request.headers.get("if-none-match") === etag) {
-    const headers = new Headers({ ETag: etag, "Cache-Control": CACHE.current, ...SECURITY_HEADERS, ...extraHeaders });
+    const headers = responseHeaders("application/json; charset=utf-8", CACHE.current, { ETag: etag, ...extraHeaders });
     return new Response(null, { status: 304, headers });
   }
   return json({ ...snapshot, provenance }, { cacheControl: CACHE.current, etag, extraHeaders });
+}
+
+async function handleExports(request, env, url) {
+  const { pathname } = url;
+  const links = exportLinks(url.origin);
+
+  if (pathname === `${API_PREFIX}/exports/manifest.json`) {
+    const { snapshot, provenance } = await resolveCurrent(env);
+    return json({
+      product: "UK Stability Monitor",
+      methodologyVersion: METHODOLOGY_VERSION,
+      generatedAt: runtimeNow(env),
+      provenance,
+      currentSnapshot: snapshot
+        ? {
+            asOf: snapshot.asOf,
+            generatedAt: snapshot.generatedAt,
+            publicationStatus: snapshot.publication?.status,
+            evidenceFingerprint: provenance.evidenceFingerprint,
+            stateFingerprint: provenance.stateFingerprint
+          }
+        : null,
+      exports: links,
+      scope: {
+        currentCsv: "All ten fixed-weight indicators in the latest materialised or explicit bootstrap snapshot.",
+        observations: "Verified and revised observation versions stored in D1; bootstrap fixtures are not presented as canonical history.",
+        snapshots: "Latest materialisation for each civil day and methodology version stored in D1."
+      },
+      limitations: [
+        "A daily snapshot is a recalculation date, not a claim that every official statistic changed that day.",
+        "Observation exports currently include verified and revised states because those are the public analytical history.",
+        "Raw archived payloads remain private in R2; each public observation exposes the SHA-256 needed to verify the archived bytes."
+      ],
+      licence: {
+        code: "MIT",
+        sourceData: "Open Government Licence v3.0; source attribution is retained per observation."
+      }
+    }, { cacheControl: CACHE.health });
+  }
+
+  if (pathname === `${API_PREFIX}/exports/current.csv`) {
+    const { snapshot, provenance } = await resolveCurrent(env);
+    if (!snapshot) return json({ error: "evidence_store_unavailable", provenance }, { status: 503, cacheControl: CACHE.none });
+    return csv(
+      toCsv(CURRENT_EXPORT_COLUMNS, currentExportRows(snapshot, provenance)),
+      `uk-stability-current-${snapshot.asOf.slice(0, 10)}.csv`,
+      { cacheControl: CACHE.current, extraHeaders: currentExtraHeaders(provenance, false) }
+    );
+  }
+
+  const isObservations = pathname === `${API_PREFIX}/exports/observations.json` || pathname === `${API_PREFIX}/exports/observations.csv`;
+  const isSnapshots = pathname === `${API_PREFIX}/exports/snapshots.json` || pathname === `${API_PREFIX}/exports/snapshots.csv`;
+  if (!isObservations && !isSnapshots) return null;
+
+  if (!repo.hasDatabase(env)) {
+    return json({
+      error: "canonical_history_unavailable",
+      message: "Canonical observation and snapshot exports require a readable D1 database. Bootstrap fixtures are never presented as historical records.",
+      exports: links
+    }, { status: 503, cacheControl: CACHE.none });
+  }
+
+  try {
+    if (isObservations) {
+      const limitPerIndicator = boundedInteger(url.searchParams.get("limit_per_indicator"), 500, { max: 500 });
+      const rows = await observationExportRows(env, limitPerIndicator);
+      if (pathname.endsWith(".csv")) {
+        return csv(toCsv(OBSERVATION_EXPORT_COLUMNS, rows), "uk-stability-observations.csv");
+      }
+      return json({
+        exportKind: "verified-and-revised-observations",
+        methodologyVersion: METHODOLOGY_VERSION,
+        generatedAt: runtimeNow(env),
+        limitPerIndicator,
+        count: rows.length,
+        observations: rows
+      }, { cacheControl: CACHE.history });
+    }
+
+    const limit = boundedInteger(url.searchParams.get("limit"), 2000, { max: 2000 });
+    const points = await repo.snapshotHistory(env, limit);
+    const rows = snapshotExportRows(points);
+    if (pathname.endsWith(".csv")) {
+      return csv(toCsv(SNAPSHOT_EXPORT_COLUMNS, rows), "uk-stability-snapshots.csv");
+    }
+    return json({
+      exportKind: "daily-materialised-snapshots",
+      methodologyVersion: METHODOLOGY_VERSION,
+      generatedAt: runtimeNow(env),
+      count: points.length,
+      snapshots: points
+    }, { cacheControl: CACHE.history });
+  } catch (error) {
+    console.error("export read failed", error?.message);
+    return json({ error: "evidence_store_unavailable" }, { status: 503, cacheControl: CACHE.none });
+  }
 }
 
 async function handleApi(request, env) {
@@ -382,9 +648,9 @@ async function handleApi(request, env) {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        ...CORS_HEADERS,
         "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, If-None-Match",
         ...SECURITY_HEADERS
       }
     });
@@ -399,11 +665,15 @@ async function handleApi(request, env) {
 
   if (pathname === `${API_PREFIX}/current`) return handleCurrent(request, env, false);
   if (pathname === `${API_PREFIX}/index`) return handleCurrent(request, env, true);
+  if (pathname.startsWith(`${API_PREFIX}/exports/`)) {
+    const exportResponse = await handleExports(request, env, url);
+    if (exportResponse) return exportResponse;
+  }
 
   if (pathname === `${API_PREFIX}/history`) {
     if (repo.hasDatabase(env)) {
       try {
-        const points = await repo.snapshotHistory(env, Number(url.searchParams.get("limit") ?? 365));
+        const points = await repo.snapshotHistory(env, boundedInteger(url.searchParams.get("limit"), 365, { max: 2000 }));
         if (points.length > 0) {
           return json({ seriesKind: "materialised-snapshots", points }, { cacheControl: CACHE.history });
         }
@@ -468,7 +738,9 @@ async function handleApi(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith("/api/")) return handleApi(request, env);
+    if (url.pathname.startsWith("/api/")) {
+      return withoutBodyForHead(request, await handleApi(request, env));
+    }
     if (!env.ASSETS) return json({ error: "assets_binding_missing" }, { status: 503, cacheControl: CACHE.none });
     return withSecurityHeaders(await env.ASSETS.fetch(request));
   }
