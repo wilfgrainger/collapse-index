@@ -66,14 +66,14 @@ The public Worker never writes. A bound but unreadable D1 database returns a deg
 
 ## Downloadable evidence
 
-The public API provides bounded, deterministic exports:
+The public API provides bounded exports with stable schemas and deterministic row ordering:
 
 - `/api/v1/exports/current.csv` — all ten fixed-weight indicators in the latest current or explicitly labelled bootstrap snapshot;
 - `/api/v1/exports/observations.json` and `.csv` — canonical verified and revised observation versions from D1;
 - `/api/v1/exports/snapshots.json` and `.csv` — one latest materialisation per civil day and methodology version;
 - `/api/v1/exports/manifest.json` — scope, limitations, licences, operational provenance and links.
 
-Exports preserve source identifiers, periods, publication dates, evidence hashes, dependency fingerprints, denominator metadata and revision lineage. CSV string cells are neutralised against spreadsheet-formula execution.
+Exports preserve source identifiers, periods, publication dates, evidence hashes, dependency fingerprints, denominator metadata and revision lineage. CSV string cells are neutralised against spreadsheet-formula execution. Response-generation timestamps and operational provenance can legitimately vary between requests.
 
 Bootstrap fixtures may be exported only as the explicitly labelled **current** capture. They are never presented as canonical observation or snapshot history. Raw archived source payloads remain private in R2; public observations expose their SHA-256 hashes for audit linkage.
 
