@@ -1,6 +1,7 @@
 /** Safe, deterministic CSV serialisation for public evidence exports. */
 
-const FORMULA_PREFIX = /^[\t\r ]*[=+\-@]/;
+const FORMULA_PREFIX = /^\s*[=+\-@]/u;
+const INTEGER_TEXT = /^-?\d+$/;
 
 function scalar(value) {
   if (value === null || value === undefined) return "";
@@ -46,7 +47,9 @@ export function toCsv(columns, rows) {
 }
 
 export function boundedInteger(value, fallback, { min = 1, max = 2000 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
-  if (!Number.isFinite(parsed)) return fallback;
+  const text = String(value ?? "").trim();
+  if (!INTEGER_TEXT.test(text)) return fallback;
+  const parsed = Number(text);
+  if (!Number.isSafeInteger(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
