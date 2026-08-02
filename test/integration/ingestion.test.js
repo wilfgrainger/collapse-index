@@ -34,7 +34,11 @@ async function ingest(env, overrides = {}, options = {}) {
 
 test("migrations apply from an empty database", async () => {
   const db = await createTestDatabase();
-  assert.deepEqual(db._migrationsApplied, ["0001_initial.sql", "0002_evidence_model.sql"]);
+  assert.deepEqual(db._migrationsApplied, [
+    "0001_initial.sql",
+    "0002_evidence_model.sql",
+    "0003_review_correctness.sql"
+  ]);
 
   const tables = db._raw
     .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
@@ -51,8 +55,6 @@ test("migrations apply from an empty database", async () => {
 });
 
 test("migration 0002 replaces the v0.1 ingestion_runs shape", async () => {
-  // 0001 created this table with different columns; CREATE IF NOT EXISTS alone
-  // would have silently kept the old definition.
   const db = await createTestDatabase();
   const columns = db._raw.prepare("PRAGMA table_info(ingestion_runs)").all().map((row) => row.name);
   assert.ok(columns.includes("trigger"), "expected the v2 column set");
@@ -74,13 +76,11 @@ test("a full run ingests all four indicators and archives their evidence", async
     ["cpi_inflation", "gdp_per_capita_growth", "industrial_disruption", "labour_market_stress"]
   );
 
-  // Five payloads archived: four indicators plus the employment denominator.
   assert.equal(env.EVIDENCE._objects.size, 5);
   for (const key of env.EVIDENCE._objects.keys()) {
     assert.match(key, /^sources\/ons-[a-z0-9]+\/\d{4}-\d{2}-\d{2}\/[0-9a-f]{64}\/[a-z0-9-]+\.json$/);
   }
 
-  // Every observation points at evidence that actually exists.
   for (const observation of observations) {
     const evidence = await repo.findEvidenceByHash(env, observation.evidenceSha256);
     assert.ok(evidence, `no evidence row for ${observation.indicatorId}`);
@@ -103,14 +103,14 @@ test("observed values match the published ONS figures", async () => {
   assert.equal(byIndicator.get("industrial_disruption").denominator.cdid, "MGRZ");
 });
 
-test("a repeated identical run is idempotent", async () => {
+test("a repeated identical same-day run is idempotent", async () => {
   const env = await createEnv();
   const first = await ingest(env);
   const second = await ingest(env);
 
   assert.equal(second.status, "no_change");
   assert.equal(second.written, 0, "no new observation rows");
-  assert.equal(second.snapshotCreated, false, "unchanged evidence creates no snapshot");
+  assert.equal(second.snapshotCreated, false, "identical state on the same day creates no duplicate snapshot");
   assert.equal(second.fingerprint, first.fingerprint);
 
   const count = env.DB._raw.prepare("SELECT COUNT(*) AS n FROM observations").get().n;
@@ -119,7 +119,6 @@ test("a repeated identical run is idempotent", async () => {
   const snapshots = env.DB._raw.prepare("SELECT COUNT(*) AS n FROM snapshots").get().n;
   assert.equal(snapshots, 1);
 
-  // Both runs are still recorded: a no-change run is an audit event, not silence.
   const runs = await repo.recentRuns(env, 10);
   assert.equal(runs.length, 2);
   assert.equal(runs[0].status, "no_change");
@@ -152,7 +151,6 @@ test("one failing source does not damage the others", async () => {
     ["gdp_per_capita_growth", "industrial_disruption", "labour_market_stress"]
   );
 
-  // The failure is recorded with a class, not swallowed.
   const failure = env.DB._raw
     .prepare("SELECT * FROM collector_results WHERE source_id = ? AND outcome = 'failed'")
     .get("ons-d7g7");
@@ -212,7 +210,6 @@ test("a revised release adds a version instead of overwriting history", async ()
   const env = await createEnv();
   await ingest(env);
 
-  // Same series, later release date, revised latest value.
   const fixtures = await fixturesByUrl();
   const cpi = sourceById("ons-d7g7");
   const revised = JSON.parse(fixtures.get(cpi.sourceUrl));
@@ -255,6 +252,7 @@ test("a snapshot records the exact observation version behind every component", 
   assert.equal(available.length, 4);
   for (const component of available) {
     assert.ok(component.observation_id, `${component.indicator_id} has no observation lineage`);
+    assert.ok(component.dependency_fingerprint, `${component.indicator_id} has no dependency lineage`);
     const observation = env.DB._raw.prepare("SELECT id FROM observations WHERE id = ?").get(component.observation_id);
     assert.ok(observation, "component points at a real observation version");
   }
@@ -273,8 +271,6 @@ test("the headline is suppressed with only four of ten indicators", async () => 
   assert.equal(result.snapshot.publication.headlineScore, null);
   assert.equal(result.snapshot.structural.availableWeight, 0.4);
   assert.equal(result.snapshot.structural.missingWeight, 0.6);
-
-  // 0.12 + 0.08 + 0.10×0.9 + 0.10×0.9 = 0.38
   assert.ok(Math.abs(result.snapshot.confidence.score - 0.38) < 1e-9);
 });
 
@@ -323,7 +319,6 @@ test("a run where every indicator fails reports failed, not partial", async () =
   assert.equal(result.written, 0);
   assert.equal((await repo.latestObservations(env)).length, 0, "a total failure writes nothing");
 
-  // The run is still audited, with a failure class per source.
   const results = env.DB._raw.prepare("SELECT source_id, failure_class FROM collector_results").all();
   assert.equal(results.length, ONS_SOURCES.length);
   assert.ok(results.every((row) => row.failure_class === "http_status"));

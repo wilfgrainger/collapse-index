@@ -1,12 +1,4 @@
 // Public Worker: static assets and the read-only JSON API.
-//
-// This Worker has no scheduled handler and no write route. It reads the last
-// materialised snapshot, or falls back to the bundled fixture capture when no
-// database is bound.
-//
-// Before deploying, replace the placeholder resource identifiers below with the
-// values returned by `wrangler d1 create` and `wrangler r2 bucket create`.
-// Account IDs and OAuth credentials are never committed.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "collapse-index-web",
@@ -22,8 +14,8 @@
   },
 
   "vars": {
-    // Overwritten at deploy time so /api/v1/health reports the deployed commit.
-    "GIT_SHA": "unknown"
+    "GIT_SHA": "unknown",
+    "BOOTSTRAP_MODE": "disabled"
   },
 
   "d1_databases": [

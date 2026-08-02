@@ -1,17 +1,4 @@
-/**
- * Scheduled ingestion (WP7).
- *
- * Ordering and isolation are the two things that matter here:
- *
- *   * one source failing must never damage another source's observation, so
- *     every collector runs inside its own try/catch and writes its own audit row
- *   * a failed fetch, parse or validation writes NO observation — the previous
- *     verified value simply stays current and ages, which the freshness model
- *     already knows how to express
- *
- * A run that finds nothing new is a success, not a no-op to hide: it is
- * recorded as `no_change` and creates no snapshot.
- */
+/** Scheduled ingestion with per-source isolation and daily materialisation. */
 
 import { ONS_SOURCES, SOURCE_ROLE, sourceById } from "../collectors/ons/registry.js";
 import { parseForSource, buildObservation, isMaterialChange } from "../collectors/ons/collect.js";
@@ -21,7 +8,6 @@ import { calculateSnapshot } from "../domain/scoring/structural.js";
 import { toFailureSummary } from "../shared/errors.js";
 import * as repo from "../storage/d1/repository.js";
 
-/** Denominators first: derived indicators cannot be built without them. */
 function ingestionOrder(sources) {
   return [...sources].sort((a, b) => {
     if (a.role === b.role) return a.id.localeCompare(b.id);
@@ -29,17 +15,12 @@ function ingestionOrder(sources) {
   });
 }
 
-/**
- * Fetches, archives and parses one source.
- * Returns a result record; never throws.
- */
-async function collectSource(env, source, { runId, now, fetchImpl, conditional = true }) {
+async function collectSource(env, source, { now, fetchImpl, conditional = true }) {
   const startedAt = Date.now();
   const base = { sourceId: source.id, recordedAt: now };
 
   try {
     const previousEvidence = conditional ? await repo.latestEvidenceForSource(env, source.id) : null;
-
     const payload = await fetchSourcePayload(source.sourceUrl, {
       fetchImpl,
       etag: previousEvidence?.etag ?? undefined,
@@ -57,8 +38,6 @@ async function collectSource(env, source, { runId, now, fetchImpl, conditional =
     }
 
     const parsed = parseForSource(source, payload.text);
-
-    // De-duplication is a hash lookup: identical bytes are already archived.
     const known = await repo.findEvidenceByHash(env, payload.sha256);
     const archive = await archiveEvidence(env.EVIDENCE, {
       source,
@@ -119,12 +98,6 @@ async function collectSource(env, source, { runId, now, fetchImpl, conditional =
   }
 }
 
-/**
- * Runs a full ingestion cycle.
- *
- * @param {object} env Worker bindings (DB, EVIDENCE)
- * @param {object} options { trigger, now, fetchImpl, sources }
- */
 export async function runIngestion(env, options = {}) {
   const now = options.now ?? new Date().toISOString();
   const trigger = options.trigger ?? "manual";
@@ -133,18 +106,15 @@ export async function runIngestion(env, options = {}) {
 
   await repo.syncSources(env, sources);
   const runId = await repo.startRun(env, trigger, now);
-
   const results = new Map();
 
-  // --- Phase 1: collect every source in dependency order -------------------
   for (const source of ingestionOrder(sources)) {
-    const result = await collectSource(env, source, { runId, now, fetchImpl });
+    const result = await collectSource(env, source, { now, fetchImpl });
     results.set(source.id, result);
     await repo.recordCollectorResult(env, runId, result);
   }
 
-  // --- Phase 2: re-fetch denominators a changed dependent still needs ------
-  // A denominator that answered 304 gave us no points to divide by.
+  // A changed dependent may need an unconditional denominator fetch after 304.
   for (const source of sources) {
     if (!source.requiresDenominator) continue;
     const dependent = results.get(source.id);
@@ -155,15 +125,24 @@ export async function runIngestion(env, options = {}) {
 
     const denominatorSource = sourceById(source.requiresDenominator);
     if (!denominatorSource) continue;
-
-    const refetched = await collectSource(env, denominatorSource, {
-      runId, now, fetchImpl, conditional: false
-    });
+    const refetched = await collectSource(env, denominatorSource, { now, fetchImpl, conditional: false });
     results.set(denominatorSource.id, refetched);
     await repo.recordCollectorResult(env, runId, refetched);
   }
 
-  // --- Phase 3: build and store observations -------------------------------
+  // The inverse matters too: a revised denominator changes a derived indicator
+  // even when its numerator answered 304. Re-fetch the numerator unconditionally.
+  for (const source of sources) {
+    if (!source.requiresDenominator) continue;
+    const denominator = results.get(source.requiresDenominator);
+    const dependent = results.get(source.id);
+    if (!denominator?.parsed || dependent?.parsed || dependent?.outcome !== "not_modified") continue;
+
+    const refetched = await collectSource(env, source, { now, fetchImpl, conditional: false });
+    results.set(source.id, refetched);
+    await repo.recordCollectorResult(env, runId, refetched);
+  }
+
   let written = 0;
   let failed = 0;
   let changed = 0;
@@ -198,6 +177,7 @@ export async function runIngestion(env, options = {}) {
         };
       }
 
+      const previous = await repo.latestObservationForSource(env, source.id);
       const { observation, validation } = buildObservation({
         source,
         parsed: result.parsed,
@@ -206,12 +186,12 @@ export async function runIngestion(env, options = {}) {
           retrievedAt: result.retrievedAt,
           key: result.evidenceKey
         },
-        denominator
+        denominator,
+        previousObservation: previous
       });
 
       await repo.recordValidationResult(env, runId, source.id, validation, now);
 
-      const previous = await repo.latestObservationForSource(env, source.id);
       if (!isMaterialChange(previous, observation)) {
         details[source.id] = { outcome: "unchanged", periodLabel: observation.periodLabel };
         continue;
@@ -224,7 +204,8 @@ export async function runIngestion(env, options = {}) {
         details[source.id] = {
           outcome: "written",
           periodLabel: observation.periodLabel,
-          value: observation.transformedValue
+          value: observation.transformedValue,
+          state: observation.state
         };
       } else {
         details[source.id] = { outcome: "duplicate", periodLabel: observation.periodLabel };
@@ -234,14 +215,17 @@ export async function runIngestion(env, options = {}) {
       const failure = toFailureSummary(error);
       details[source.id] = { outcome: "failed", ...failure };
       await repo.recordValidationResult(
-        env, runId, source.id,
+        env,
+        runId,
+        source.id,
         { subject: "observation", ok: false, errors: [failure], warnings: [] },
         now
       );
     }
   }
 
-  // --- Phase 4: materialise a snapshot only when the evidence moved --------
+  // Snapshots are daily materialisations, not evidence objects. Time-dependent
+  // freshness and event decay must advance even when upstream bytes do not.
   const observations = await repo.latestObservations(env);
   const snapshot = calculateSnapshot({
     observations,
@@ -250,7 +234,14 @@ export async function runIngestion(env, options = {}) {
   });
 
   const fingerprint = repo.evidenceFingerprint(snapshot);
-  const existingSnapshotId = await repo.snapshotExistsForFingerprint(env, fingerprint);
+  const stateFingerprint = repo.snapshotStateFingerprint(snapshot);
+  const asOfDate = snapshot.asOf.slice(0, 10);
+  const existingSnapshotId = await repo.snapshotExistsForState(
+    env,
+    asOfDate,
+    snapshot.methodologyVersion,
+    stateFingerprint
+  );
 
   let snapshotId = existingSnapshotId;
   let snapshotCreated = false;
@@ -263,9 +254,6 @@ export async function runIngestion(env, options = {}) {
     snapshotCreated = true;
   }
 
-  // Status is judged against the indicator sources, not every source. Counting
-  // the denominator here would mean a run where every indicator failed reported
-  // itself as merely "partial".
   const indicatorCount = sources.filter((source) => source.role === SOURCE_ROLE.INDICATOR).length;
   const attempted = sources.length;
   const status = failed >= indicatorCount ? "failed"
@@ -294,6 +282,7 @@ export async function runIngestion(env, options = {}) {
     snapshotId,
     snapshotCreated,
     fingerprint,
+    stateFingerprint,
     details,
     snapshot
   };

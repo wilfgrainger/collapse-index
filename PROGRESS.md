@@ -120,7 +120,7 @@ headline is now suppressed by design rather than estimated from seed values.
   confidence, publication gates and an honest uncertainty range
 - two-sided inflation curve; acute overlay implemented and capped at 8
 - ingestion Worker (scheduled only) and public Worker (read-only)
-- API v2: `current`, `history`, `indicators/:id`, `evidence-health`,
+- API routes: `current`, `history`, `indicators/:id`, `evidence-health`,
   `methodology`, `sources`, `health`, `openapi.json`
 - dashboard rebuilt around the suppressed-headline state, with a collector
   health table and an explicit account of the six missing indicators
@@ -173,3 +173,46 @@ confirmed on first deployment.**
 2. capture a second release per source to satisfy the two-release rule;
 3. add FSA food insecurity, then NHS RTT with England-only disclosure;
 4. resolve the HBAI, housing, trust and four-nation environmental definitions.
+
+## 2026-08-01 — post-merge correctness follow-up
+
+PR #3 corrects the evidence/runtime boundary issues found after PR #2 merged. This section supersedes the original same-day idempotency and validation claims above where they conflict.
+
+### Corrected
+
+- separated immutable evidence identity from time-dependent materialised state;
+- recalculates and stores a daily snapshot even when upstream bytes are unchanged;
+- deduplicates identical state only within the same civil day;
+- added dependency fingerprints for derived observations, including both BBFW and MGRZ hashes;
+- handles denominator-only revisions even when the numerator returns HTTP `304`;
+- marks same-period replacements as `revised` and retains supersession lineage;
+- validates the actual schema-v2 snapshot before persistence;
+- restored `/api/v1/index` as a deprecated compatibility alias;
+- made bundled bootstrap fallback explicit-only and disabled it in production configuration;
+- reports bound D1 failures as degraded instead of masking them with fixture data;
+- marks materialisations older than two days stale and degrades health/evidence-health;
+- interprets ONS release timestamps using UK civil dates;
+- enforces timeout and hard byte limits throughout streamed response consumption;
+- corrected HTTP `304` handling so it is not treated as a generic redirect;
+- raised the supported runtime to Node.js 22.13+;
+- added enforced GitHub Actions CI.
+
+### Migration correction
+
+- restored merged migration `0002_evidence_model.sql` unchanged;
+- added forward migration `0003_review_correctness.sql`;
+- verified a populated v0.2 database upgrades without losing observation, snapshot, component or ingestion-run lineage;
+- verified `PRAGMA foreign_key_check` after upgrade.
+
+### Final verification
+
+- syntax sweep passes;
+- **124 tests pass** across unit, contract and integration suites;
+- migrations apply from empty and from a populated v0.2 state;
+- public Worker dry-run bundle passes at 42.92 KiB, 12.12 KiB gzip;
+- ingestion Worker dry-run bundle passes at 84.76 KiB, 21.92 KiB gzip;
+- CI runs on Node.js 22.13.1 and is required for pull requests.
+
+### Remaining external verification
+
+Live ONS collection still requires confirmation after deployment to real Cloudflare resources. The repository now fails visibly and safely if that collection or the daily materialisation stops.

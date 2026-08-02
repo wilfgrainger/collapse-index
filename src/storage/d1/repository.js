@@ -1,22 +1,12 @@
-/**
- * D1 persistence and read paths.
- *
- * All statements are prepared and parameterised; no SQL is ever assembled from
- * request input. Read paths are bounded and indexed, because the public Worker
- * must answer from stored state without recalculating anything.
- */
+/** D1 persistence and read paths. */
 
 import { ONS_SOURCES } from "../../collectors/ons/registry.js";
+import { validateSnapshot } from "../../domain/evidence/schema.js";
 
 export function hasDatabase(env) {
   return Boolean(env?.DB && typeof env.DB.prepare === "function");
 }
 
-/* -------------------------------------------------------------------------- */
-/* Sources                                                                     */
-/* -------------------------------------------------------------------------- */
-
-/** Syncs the code-declared source registry into D1. Declarations are code, not data. */
 export async function syncSources(env, sources = ONS_SOURCES) {
   const now = new Date().toISOString();
   const statements = sources.map((source) =>
@@ -52,10 +42,6 @@ export async function syncSources(env, sources = ONS_SOURCES) {
   return statements.length;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Evidence                                                                    */
-/* -------------------------------------------------------------------------- */
-
 export async function findEvidenceByHash(env, sha256) {
   const row = await env.DB.prepare(
     `SELECT sha256, object_key, published_at, retrieved_at, archived FROM evidence_objects WHERE sha256 = ?1`
@@ -63,7 +49,6 @@ export async function findEvidenceByHash(env, sha256) {
   return row ?? null;
 }
 
-/** Most recent evidence for a source, used for conditional requests. */
 export async function latestEvidenceForSource(env, sourceId) {
   const row = await env.DB.prepare(`
     SELECT sha256, object_key, etag, last_modified, published_at, retrieved_at
@@ -104,10 +89,6 @@ export async function recordRelease(env, release) {
   ).run();
 }
 
-/* -------------------------------------------------------------------------- */
-/* Observations                                                                */
-/* -------------------------------------------------------------------------- */
-
 function mapObservationRow(row) {
   if (!row) return null;
   return {
@@ -132,6 +113,7 @@ function mapObservationRow(row) {
     sourceUrl: row.source_url,
     licence: row.licence,
     evidenceSha256: row.evidence_sha256,
+    dependencyFingerprint: row.dependency_fingerprint,
     parserVersion: row.parser_version,
     state: row.state,
     notes: row.notes,
@@ -148,7 +130,6 @@ export async function latestObservationForSource(env, sourceId) {
   return mapObservationRow(row);
 }
 
-/** Latest observation version per indicator — one bounded, indexed query. */
 export async function latestObservations(env) {
   const result = await env.DB.prepare(`
     SELECT * FROM observations
@@ -167,8 +148,9 @@ export async function insertObservation(env, observation, supersedesId = null) {
       indicator_id, source_id, cdid, dataset_id, raw_value, raw_unit, transformed_value, unit,
       frequency, geography, seasonal_adjustment, period_start, period_end, period_label,
       published_at, expected_next_release, retrieved_at, source_url, licence,
-      evidence_sha256, parser_version, state, notes, denominator_json, supersedes_id
-    ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25)
+      evidence_sha256, dependency_fingerprint, parser_version, state, notes,
+      denominator_json, supersedes_id
+    ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)
   `).bind(
     observation.indicatorId, observation.sourceId, observation.cdid, observation.datasetId,
     observation.rawValue, observation.rawUnit, observation.transformedValue, observation.unit,
@@ -176,12 +158,12 @@ export async function insertObservation(env, observation, supersedesId = null) {
     observation.periodStart, observation.periodEnd, observation.periodLabel,
     observation.publishedAt, observation.expectedNextRelease ?? null, observation.retrievedAt,
     observation.sourceUrl, observation.licence, observation.evidenceSha256,
-    observation.parserVersion, observation.state, observation.notes ?? null,
+    observation.dependencyFingerprint, observation.parserVersion, observation.state,
+    observation.notes ?? null,
     observation.denominator ? JSON.stringify(observation.denominator) : null,
     supersedesId
   ).run();
 
-  // `INSERT OR IGNORE` means a repeated identical run writes nothing.
   return { inserted: (result.meta?.changes ?? 0) > 0, id: result.meta?.last_row_id ?? null };
 }
 
@@ -189,116 +171,129 @@ export async function observationHistory(env, indicatorId, limit = 60) {
   const result = await env.DB.prepare(`
     SELECT * FROM observations
     WHERE indicator_id = ?1 AND state IN ('verified', 'revised')
-    ORDER BY period_end DESC
+    ORDER BY period_end DESC, id DESC
     LIMIT ?2
   `).bind(indicatorId, Math.min(Math.max(1, limit), 500)).all();
   return (result.results ?? []).map(mapObservationRow);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Snapshots                                                                   */
-/* -------------------------------------------------------------------------- */
-
-/**
- * A stable fingerprint of the evidence behind a snapshot. Two runs with the
- * same fingerprint describe the same world, so the second creates nothing.
- */
+/** Evidence identity only: excludes time-dependent freshness and event decay. */
 export function evidenceFingerprint(snapshot) {
   return snapshot.indicators
     .filter((indicator) => indicator.available)
-    .map((indicator) => `${indicator.id}:${indicator.source?.evidenceSha256?.slice(0, 16) ?? "none"}`)
+    .map((indicator) => `${indicator.id}:${indicator.source?.dependencyFingerprint ?? indicator.source?.evidenceSha256 ?? "none"}`)
     .sort()
     .join("|") || "empty";
 }
 
+/**
+ * Identity of the materialised output. It deliberately includes the civil date,
+ * freshness stages, confidence and acute overlay so time can advance even when
+ * upstream bytes do not change.
+ */
+export function snapshotStateFingerprint(snapshot) {
+  const components = snapshot.indicators.map((indicator) => [
+    indicator.id,
+    indicator.available ? 1 : 0,
+    indicator.source?.dependencyFingerprint ?? "none",
+    indicator.freshness?.stage ?? "missing",
+    indicator.pressure ?? "null",
+    indicator.confidenceContribution ?? 0
+  ].join(":"));
+
+  return [
+    snapshot.asOf.slice(0, 10),
+    snapshot.methodologyVersion,
+    snapshot.publication.status,
+    snapshot.structural.observedPressure,
+    snapshot.confidence.score,
+    snapshot.acute.overlay,
+    ...components.sort()
+  ].join("|");
+}
+
 export async function latestSnapshot(env) {
   const row = await env.DB.prepare(`
-    SELECT payload_json, evidence_fingerprint, generated_at, as_of_date
+    SELECT payload_json, evidence_fingerprint, state_fingerprint, generated_at, as_of_date
     FROM snapshots ORDER BY as_of_date DESC, id DESC LIMIT 1
   `).first();
   if (!row) return null;
   return {
     snapshot: JSON.parse(row.payload_json),
     fingerprint: row.evidence_fingerprint,
+    stateFingerprint: row.state_fingerprint,
     generatedAt: row.generated_at,
     asOfDate: row.as_of_date
   };
 }
 
-export async function snapshotExistsForFingerprint(env, fingerprint) {
-  const row = await env.DB.prepare(
-    `SELECT id FROM snapshots WHERE evidence_fingerprint = ?1 ORDER BY id DESC LIMIT 1`
-  ).bind(fingerprint).first();
+export async function snapshotExistsForState(env, asOfDate, methodologyVersion, stateFingerprint) {
+  const row = await env.DB.prepare(`
+    SELECT id FROM snapshots
+    WHERE as_of_date = ?1 AND methodology_version = ?2 AND state_fingerprint = ?3
+    ORDER BY id DESC LIMIT 1
+  `).bind(asOfDate, methodologyVersion, stateFingerprint).first();
   return row?.id ?? null;
 }
 
 export async function writeSnapshot(env, snapshot, observationIdByIndicator = new Map()) {
-  const fingerprint = evidenceFingerprint(snapshot);
+  const validation = validateSnapshot(snapshot);
+  if (!validation.ok) {
+    throw new Error(`snapshot validation failed: ${JSON.stringify(validation.errors)}`);
+  }
+
+  const evidence = evidenceFingerprint(snapshot);
+  const state = snapshotStateFingerprint(snapshot);
   const asOfDate = snapshot.asOf.slice(0, 10);
 
   const result = await env.DB.prepare(`
     INSERT INTO snapshots (
       as_of_date, methodology_version, publication_status, headline_score, level_id,
       observed_pressure, available_weight, missing_weight, range_low, range_high,
-      acute_overlay, confidence, evidence_fingerprint, payload_json, generated_at
-    ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)
-    ON CONFLICT(as_of_date, methodology_version) DO UPDATE SET
-      publication_status = excluded.publication_status,
-      headline_score = excluded.headline_score,
-      level_id = excluded.level_id,
-      observed_pressure = excluded.observed_pressure,
-      available_weight = excluded.available_weight,
-      missing_weight = excluded.missing_weight,
-      range_low = excluded.range_low,
-      range_high = excluded.range_high,
-      acute_overlay = excluded.acute_overlay,
-      confidence = excluded.confidence,
-      evidence_fingerprint = excluded.evidence_fingerprint,
-      payload_json = excluded.payload_json,
-      generated_at = excluded.generated_at
+      acute_overlay, confidence, evidence_fingerprint, state_fingerprint,
+      payload_json, generated_at
+    ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16)
     RETURNING id
   `).bind(
     asOfDate, snapshot.methodologyVersion, snapshot.publication.status,
     snapshot.publication.headlineScore, snapshot.publication.level?.id ?? null,
     snapshot.structural.observedPressure, snapshot.structural.availableWeight,
     snapshot.structural.missingWeight, snapshot.structural.range.low, snapshot.structural.range.high,
-    snapshot.acute.overlay, snapshot.confidence.score, fingerprint,
+    snapshot.acute.overlay, snapshot.confidence.score, evidence, state,
     JSON.stringify(snapshot), snapshot.generatedAt
   ).first();
 
   const snapshotId = result?.id;
-  if (!snapshotId) return { snapshotId: null, fingerprint };
+  if (!snapshotId) return { snapshotId: null, fingerprint: evidence, stateFingerprint: state };
 
   const components = snapshot.indicators.map((indicator) =>
     env.DB.prepare(`
       INSERT INTO snapshot_components (
-        snapshot_id, indicator_id, observation_id, weight, pressure,
+        snapshot_id, indicator_id, observation_id, dependency_fingerprint, weight, pressure,
         contribution, confidence_contribution, available, unavailable_reason
-      ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)
-      ON CONFLICT(snapshot_id, indicator_id) DO UPDATE SET
-        observation_id = excluded.observation_id,
-        pressure = excluded.pressure,
-        contribution = excluded.contribution,
-        confidence_contribution = excluded.confidence_contribution,
-        available = excluded.available,
-        unavailable_reason = excluded.unavailable_reason
+      ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
     `).bind(
       snapshotId, indicator.id, observationIdByIndicator.get(indicator.id) ?? null,
+      indicator.source?.dependencyFingerprint ?? null,
       indicator.weight, indicator.pressure, indicator.contribution,
       indicator.confidenceContribution, indicator.available ? 1 : 0, indicator.reason ?? null
     )
   );
   await env.DB.batch(components);
 
-  return { snapshotId, fingerprint };
+  return { snapshotId, fingerprint: evidence, stateFingerprint: state };
 }
 
 export async function snapshotHistory(env, limit = 365) {
   const result = await env.DB.prepare(`
-    SELECT as_of_date, publication_status, headline_score, level_id, observed_pressure,
-           available_weight, range_low, range_high, confidence, methodology_version
-    FROM snapshots
-    ORDER BY as_of_date DESC
+    SELECT s.as_of_date, s.publication_status, s.headline_score, s.level_id,
+           s.observed_pressure, s.available_weight, s.range_low, s.range_high,
+           s.confidence, s.methodology_version
+    FROM snapshots s
+    WHERE s.id IN (
+      SELECT MAX(id) FROM snapshots GROUP BY as_of_date, methodology_version
+    )
+    ORDER BY s.as_of_date DESC
     LIMIT ?1
   `).bind(Math.min(Math.max(1, limit), 2000)).all();
 
@@ -314,10 +309,6 @@ export async function snapshotHistory(env, limit = 365) {
     methodologyVersion: row.methodology_version
   })).reverse();
 }
-
-/* -------------------------------------------------------------------------- */
-/* Operational audit                                                           */
-/* -------------------------------------------------------------------------- */
 
 export async function startRun(env, trigger, startedAt) {
   const row = await env.DB.prepare(`
@@ -361,7 +352,6 @@ export async function recordValidationResult(env, runId, sourceId, validation, r
   ).run();
 }
 
-/** Per-source collector health for the public evidence-health panel. */
 export async function collectorHealth(env) {
   const result = await env.DB.prepare(`
     SELECT s.id AS source_id, s.cdid, s.dataset_id, s.title, s.role, s.indicator_id,
