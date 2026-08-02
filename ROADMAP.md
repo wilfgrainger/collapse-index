@@ -34,6 +34,7 @@
 - [x] implement private R2 source-payload archive with SHA-256 deduplication
 - [x] expose collector and evidence health
 - [x] remove hand-entered prototype values from headline eligibility
+- [x] publish a manifest and bounded JSON/CSV exports for current evidence, observations and snapshots
 
 ### First exact-series tranche
 
@@ -46,7 +47,7 @@
 
 ### Remaining core indicators
 
-- [ ] implement FSA Food and You 2 food-security collector
+- [ ] implement FSA Food and You 2 food-security collector — tracked in issue #5; exact CSV resource and definition review are the first gate
 - [ ] implement NHS England RTT collector with England-only disclosure
 - [ ] implement DWP HBAI child-poverty collector
 - [ ] implement ONS private-rental-affordability collector
@@ -61,6 +62,7 @@
 - [x] lower and document acute-overlay cap at eight points
 - [x] show structural baseline, acute overlay and confidence separately
 - [x] add evidence-health and suppressed-headline states
+- [x] add a public evidence download centre with non-JavaScript access
 
 ## Release 0.3 — Reproducible history and robustness
 
@@ -71,7 +73,7 @@
 - [ ] mark structural breaks, geography changes and methodology versions
 - [ ] publish weight, breakpoint, aggregation and missing-data sensitivity analysis
 - [ ] publish leave-one-indicator-out and correlation/double-counting analysis
-- [ ] add downloadable CSV and JSON observations and snapshots
+- [x] add downloadable CSV and JSON observations and snapshots
 
 ## Release 0.4 — Reviewed acute-event system
 
