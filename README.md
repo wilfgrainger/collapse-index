@@ -43,10 +43,11 @@ Six indicators — child poverty, housing stress, food insecurity, trust in gove
 ```text
 Browser
   └─ collapse-index-web Worker  (read-only, no scheduled handler)
-       ├─ Static Assets: dashboard and methodology
+       ├─ Static Assets: dashboard, downloads and methodology
        └─ GET /api/v1/{current,index,history,indicators/:id,
-                        evidence-health,methodology,sources,health,openapi.json}
-              └─ D1: latest daily materialised snapshot
+                        evidence-health,methodology,sources,health,openapi.json,
+                        exports/*}
+              └─ D1: canonical observations and daily materialised snapshots
 
 Cron 15 8 * * *
   └─ collapse-index-ingest Worker  (scheduled only, no public route)
@@ -62,6 +63,19 @@ Evidence objects remain deduplicated when upstream bytes do not change. Daily sn
 Derived observations use a dependency fingerprint containing every payload that can alter the result. For industrial disruption, that includes both the BBFW numerator and MGRZ employment denominator.
 
 The public Worker never writes. A bound but unreadable D1 database returns a degraded response rather than silently falling back to fixtures. A materialisation more than two days old is explicitly marked stale and causes the health endpoints to report degraded status.
+
+## Downloadable evidence
+
+The public API provides bounded, deterministic exports:
+
+- `/api/v1/exports/current.csv` — all ten fixed-weight indicators in the latest current or explicitly labelled bootstrap snapshot;
+- `/api/v1/exports/observations.json` and `.csv` — canonical verified and revised observation versions from D1;
+- `/api/v1/exports/snapshots.json` and `.csv` — one latest materialisation per civil day and methodology version;
+- `/api/v1/exports/manifest.json` — scope, limitations, licences, operational provenance and links.
+
+Exports preserve source identifiers, periods, publication dates, evidence hashes, dependency fingerprints, denominator metadata and revision lineage. CSV string cells are neutralised against spreadsheet-formula execution.
+
+Bootstrap fixtures may be exported only as the explicitly labelled **current** capture. They are never presented as canonical observation or snapshot history. Raw archived source payloads remain private in R2; public observations expose their SHA-256 hashes for audit linkage.
 
 ## Local development
 
@@ -99,13 +113,13 @@ npm run deploy:web
 
 Migrations are forward-only. `0002_evidence_model.sql` remains immutable; `0003_review_correctness.sql` upgrades populated v0.2 databases while preserving observation, snapshot and ingestion-run lineage.
 
-Smoke-test `/api/v1/health`, `/api/v1/evidence-health`, `/api/v1/current` and a static asset after deployment.
+Smoke-test `/api/v1/health`, `/api/v1/evidence-health`, `/api/v1/current`, `/api/v1/exports/manifest.json` and a static asset after deployment.
 
 > **Live collection has not been confirmed from the original development sandbox.** Its egress policy returned HTTP 403 to the Worker runtime, although the source URLs were reachable from the shell. Confirm real collection immediately after first deployment.
 
 ## API
 
-All routes are read-only.
+All routes are read-only and support `GET` and `HEAD`.
 
 - `GET /api/v1/current` — current materialised pressure, confidence, gates and indicators.
 - `GET /api/v1/index` — deprecated compatibility alias for `/api/v1/current`.
@@ -116,6 +130,10 @@ All routes are read-only.
 - `GET /api/v1/sources` — exact series identifiers, licences, coverage and gaps.
 - `GET /api/v1/health` — binding, snapshot-age and latest-ingestion health.
 - `GET /api/v1/openapi.json` — machine-readable API description.
+- `GET /api/v1/exports/manifest.json` — export catalogue and reuse limitations.
+- `GET /api/v1/exports/current.csv` — current ten-indicator snapshot.
+- `GET /api/v1/exports/observations.{json,csv}` — canonical observation versions.
+- `GET /api/v1/exports/snapshots.{json,csv}` — daily materialised history.
 
 Stale current data remains inspectable but includes provenance and warning headers. Health and evidence-health return `503` when the daily materialisation is stale or storage is degraded.
 
@@ -129,14 +147,20 @@ src/collectors/ons/       hardened client, parser, registry and observation buil
 src/storage/d1/           append-only evidence and snapshot repositories
 src/storage/r2/           content-addressed private evidence archive
 src/ingest/               scheduled Worker and orchestration
-src/web/                  public Worker and read-only API
+src/web/                  public Worker, read-only API and export serialisation
 src/shared/               hashing, periods and typed errors
 fixtures/ons/             unmodified ONS payloads used by contract tests
 migrations/               forward-only D1 schema changes
-public/                   dashboard and methodology website
+public/                   dashboard, downloads and methodology website
 test/{unit,contract,integration}/
-docs/                     methodology, platform and decision records
+docs/                     methodology, platform, delivery and decision records
 ```
+
+## Contributing and security
+
+Contributions are welcome, particularly source validation, statistical review, accessibility testing and resilient public-data collectors. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before changing evidence or methodology.
+
+Report vulnerabilities privately according to [`SECURITY.md`](SECURITY.md). Do not place credentials, private evidence payloads or exploit details in public issues.
 
 ## Before a public editorial launch
 
