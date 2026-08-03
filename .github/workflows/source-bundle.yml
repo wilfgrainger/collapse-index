@@ -1,9 +1,9 @@
 name: Source Bundle
 
 on:
-  push:
+  pull_request:
     branches:
-      - work/graphite-completion
+      - main
 
 permissions:
   contents: read
