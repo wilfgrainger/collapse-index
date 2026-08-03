@@ -1,33 +1,23 @@
 name: Source Bundle
 
 on:
-  push:
+  pull_request:
     branches:
-      - work/graphite-completion
-    paths-ignore:
-      - source-bundle.b64
-      - source-bundle/**
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   bundle:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: work/graphite-completion
       - name: Create source archive
         run: |
-          tar --exclude=.git --exclude=.wrangler --exclude=source-bundle.b64 --exclude=source-bundle -czf /tmp/collapse-index-source.tar.gz .
-          rm -rf source-bundle
-          mkdir source-bundle
-          base64 -w 100 /tmp/collapse-index-source.tar.gz | split -l 80 - source-bundle/part-
-      - name: Commit temporary bundle
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A source-bundle
-          git diff --cached --quiet || git commit -m "chore: bound source bundle chunks [skip ci]"
-          git push
+          tar --exclude=.git --exclude=.wrangler --exclude=source-bundle.b64 --exclude=source-bundle --exclude=discovery -czf collapse-index-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: collapse-index-source
+          path: collapse-index-source.tar.gz
+          retention-days: 1
