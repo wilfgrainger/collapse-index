@@ -1,0 +1,957 @@
+## ons_trust
+{
+  "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx",
+  "link_text": "xlsx (417.9 KB)",
+  "path": "discovery/raw/ons_trust.xlsx",
+  "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
+  "bytes": 427966
+}
+sheets=["Contents", "Information", "Notes", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "4.1", "4.2", "4.3", "4.4", "4.5", "5.1", "5.2", "6.1", "6.2", "6.3", "7.1", "7.2", "8.1", "8.2", "8.3", "8.4"]
+-- sheet 'Contents' rows=46 cols=4
+Trust in Government Survey			
+United Kingdom, 27 September to 23 October 2023			
+Topic	Worksheet	Description	
+Introduction	Contents	Worksheet of contents	
+	Information	Background information on the data and analysis in this dataset	
+	Notes	Footnote text referenced in specific worksheets. When notes are mentioned, the note marker is presented in square brackets.	
+Levels of trust in government	1.1	Levels of trust in general	
+	1.2	Levels of trust in the UK government	
+	1.3	Levels of trust in local government	
+	1.4	Levels of trust in parliament	
+	1.5	Levels of trust in the political parties	
+	1.6	Levels of trust in the devolved governments	
+Levels of trust in institutions	2.1	Levels of trust in the police	
+	2.2	Levels of trust in the national civil service	
+	2.3	Levels of trust in the news media	
+	2.4	Levels of trust in the courts and judicial system	
+	2.5	Levels of trust in international organisations	
+	2.6	Levels of trust in the regional civil service	
+Drivers of trust	3.1	Integrity	
+	3.2	Responsiveness	
+	3.3	Reliability	
+	3.4	Openness	
+	3.5	Fairness	
+	3.6	Overall drivers of trust	
+Public services	4.1	Satisfaction with the education system	
+-- sheet 'Information' rows=36 cols=1
+Background information on this dataset
+Back to contents
+Background
+The Trust in Government study aims to monitor people’s trust across different institutions and levels of government. It includes questions on drivers of trust, political attitudes, political participation and satisfaction with public services
+The 2023 edition of the study has been conducted in 30 countries who are members of the Organisation for Economic Co-operation Development (OECD), with fieldwork completed in September and October 2023.
+The questionnaire was designed by the OECD in collaboration with the Office for National Statistics (ONS) and statistical offices in other participating countries.
+The UK data presented in these tables were collected by the Office for National Statistics. More information about the collection and analysis of these data can be found below and in the accompanying bulletin and Quality and Methodology Information article.
+Coverage
+The UK data in these tables are based on a survey of 1,919 adults (aged 18 years or over) living in the UK. ​
+Respondents living in Great Britain were sampled from those who had previously completed the ONS Labour Force Survey. Respondents living in Northern Ireland were sampled from an address file provided by the Northern Ireland Statistics and Research Agency (NISRA).
+The survey was conducted between 27 September and 23 October 2023. ONS invited 4,135 people to take part and achieved a response rate of 46% (1,919). 
+The survey was conducted online using Smart Survey software. In a small number of cases (1.7%), respondents completed the survey over the telephone with an ONS Telephone Interviewer.
+Weighted count
+In order to make the sample of a survey representative of the population, responses are weighted. 'Weighted count' provides the representative count for each breakdown. Percentages in this report are based on weighted counts that are representative of the population of adults (aged 18 years or over) living in the UK and are adjusted to address age, sex, regional and educational bias in response rates.
+Weighted counts are rounded to the nearest 1,000.
+Sample size
+This refers to the total number of people who responded to each question. Sample sizes for some response categories may be small and therefore should be treated with caution.
+Estimates shaded in light grey relate to statistics based on sample sizes smaller than 30 and should be treated with caution.
+Estimates with “[c]" relate to statistics based on small sample sizes (less than 10). Such values have been suppressed on quality grounds and to avoid disclosure issues.
+Missing data
+There are cases in which respondents did not answer a specific question. Where this happens, they have been excluded from the analysis, which means the sample counts may differ across questions that have the same base population.
+Rounding
+All estimates in these data tables are individually rounded to whole numbers. Totals may not add exactly due to this rounding. Percentages may not sum to 100% or match figures reported as aggregated categories.
+Confidence Intervals
+Lower confidence limit and Upper confidence limit refer to Lower and Upper 95% confidence limits. These form a confidence interval, which is a measure of the statistical precision of an estimate and shows the range of uncertainty around the calculated estimate. As a general rule, if the confidence interval around one figure overlaps with the interval around another, we cannot say with certainty that there is more than a chance difference between the two figures. 
+-- sheet 'Notes' rows=18 cols=2
+Notes for data in this spreadsheet	
+This worksheet contains one table.	
+Back to contents	
+Note number	Note text
+1	The base populations for means include all those who provided an answer other than 'don't know'.
+2	Full question: If new technologies (for example artificial intelligence or digital applications) became available, how likely do you think it is that the UK government will regulate them appropriately and help businesses and citizens use them responsibly?
+3	Full question: If you needed information about an administrative service (for example, obtaining a passport, registering a birth or applying for benefits), how likely do you think it is that clear information would be easily available?
+4	Full question: If a public employee interacted with the public in the area where you live, how likely do you think it is that they would treat all people equally regardless of their income level, gender identity, sexual orientation, ethnicity or country of origin? 
+5	Respondents were able to select more than one option. Therefore percentages will not sum to 100%.
+6	Of all UK respondents who had used an administrative service in the last 12 months.
+7	Of all UK respondents who voted in last UK national election.
+8	Of all UK respondents who did not vote in last UK national election.
+9	Explanatory text provided to respondents: Your total household income includes your own income plus the incomes of all household members who live together with you. The total income includes income from jobs, pensions, social security, interest, dividends, capital gains claimed, profits from businesses, unemployment payments and all other money you received. 
+	
+	
+	
+	
+	
+-- sheet '1.1' rows=31 cols=7
+Worksheet 1.1: Levels of trust in general						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 1.1A and 1.1B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale from 0 to 10, where 0 is not at all and 10 is completely, in general how much do you trust most people?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all	1	1	2			
+1	1	1	2			
+2	2	1	3			
+3	5	4	6			
+4	5	4	6			
+5	15	13	17			
+6	15	13	17			
+7	29	27	32			
+8	21	18	23			
+9	4	3	5			
+10 - completely	1	1	2			
+Don't know	[c]	[c]	[c]			
+Low or no trust (0 to 4)	15	13	17			
+Neutral (5)	15	13	17			
+High or moderately high trust (6 to 10)	70	67	73			
+Weighted count	53043000					
+-- sheet '1.2' rows=31 cols=7
+Worksheet 1.2: Levels of trust in the UK government						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 1.2A and 1.2B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the UK government?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all	17	15	20			
+1	6	5	7			
+2	11	9	12			
+3	13	11	14			
+4	10	8	12			
+5	16	14	18			
+6	10	8	12			
+7	10	8	11			
+8	4	3	5			
+9	2	1	3			
+10 - completely	1	0	2			
+Don't know	1	0	1			
+Low or no trust (0 to 4)	57	54	60			
+Neutral (5)	16	14	18			
+High or moderately high trust (6 to 10)	27	24	29			
+Weighted count	53128000					
+-- sheet '1.3' rows=31 cols=4
+Worksheet 1.3: Levels of trust in local government			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 1.3A and 1.3B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust local government? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	9	7	10
+1	4	3	5
+2	8	7	10
+3	11	9	13
+4	14	12	16
+5	17	15	19
+6	13	11	14
+7	13	11	15
+8	6	5	7
+9	2	1	3
+10 - completely	1	1	2
+Don't know	3	2	4
+Low or no trust (0 to 4)	46	43	49
+Neutral (5)	17	15	19
+High or moderately high trust (6 to 10)	34	32	37
+Weighted count	52928000		
+-- sheet '1.4' rows=31 cols=4
+Worksheet 1.4: Levels of trust in parliament			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 1.4A and 1.4B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust Parliament (the House of Commons and the House of Lords)? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	17	14	19
+1	7	5	8
+2	11	9	12
+3	12	11	14
+4	11	9	12
+5	15	13	17
+6	9	8	11
+7	8	6	9
+8	5	4	6
+9	1	1	2
+10 - completely	1	0	1
+Don't know	5	3	6
+Low or no trust (0 to 4)	57	54	59
+Neutral (5)	15	13	17
+High or moderately high trust (6 to 10)	24	22	26
+Weighted count	52909000		
+-- sheet '1.5' rows=31 cols=4
+Worksheet 1.5: Levels of trust in the political parties			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 1.5A and 1.5B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the political parties? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	18	16	20
+1	8	7	10
+2	13	11	15
+3	16	14	18
+4	12	10	14
+5	17	15	19
+6	6	5	8
+7	4	3	5
+8	1	1	2
+9	[c]	[c]	[c]
+10 - completely	[c]	[c]	[c]
+Don't know	3	2	4
+Low or no trust (0 to 4)	68	65	70
+Neutral (5)	17	15	19
+High or moderately high trust (6 to 10)	12	11	14
+Weighted count	52928000		
+-- sheet '1.6' rows=79 cols=4
+Worksheet 1.6: Levels of trust in the devolved governments			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains six tables.			
+Tables 1.6A to 1.6F are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the Scottish Government? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	11	9	13
+1	4	3	5
+2	6	5	8
+3	8	6	9
+4	7	5	8
+5	10	8	12
+6	5	4	6
+7	5	4	7
+8	4	3	4
+9	1	1	2
+10 - completely	[c]	[c]	[c]
+Don't know	39	36	42
+Low or no trust (0 to 4)	35	33	38
+Neutral (5)	10	8	12
+High or moderately high trust (6 to 10)	16	14	18
+Weighted count	52505000		
+-- sheet '2.1' rows=31 cols=7
+Worksheet 2.1: Levels of trust in the police						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 2.1A to 2.1B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the police? 	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all	5	4	6			
+1	3	2	4			
+2	4	3	6			
+3	8	7	10			
+4	8	7	10			
+5	14	12	16			
+6	13	11	15			
+7	18	16	20			
+8	14	12	16			
+9	7	5	8			
+10 - completely	4	3	5			
+Don't know	1	0	2			
+Low or no trust (0 to 4)	29	26	31			
+Neutral (5)	14	12	16			
+High or moderately high trust (6 to 10)	56	54	59			
+Weighted count	52936000					
+-- sheet '2.2' rows=31 cols=4
+Worksheet 2.2: Levels of trust in the national civil service			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 2.2A to 2.2B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale from 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the national civil service (non-elected government employees at the central level of government)?	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	6	4	7
+1	3	2	4
+2	6	4	7
+3	6	5	7
+4	7	5	8
+5	16	14	18
+6	13	11	15
+7	14	12	16
+8	12	10	13
+9	5	3	6
+10 - completely	2	2	3
+Don't know	13	11	15
+Low or no trust (0 to 4)	26	24	29
+Neutral (5)	16	14	18
+High or moderately high trust (6 to 10)	45	43	48
+Weighted count	52855000		
+-- sheet '2.3' rows=31 cols=4
+Worksheet 2.3: Levels of trust in the news media			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 2.3A to 2.3B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the news media? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	17	15	19
+1	10	8	12
+2	12	10	14
+3	15	13	17
+4	11	9	13
+5	14	12	16
+6	9	7	10
+7	6	4	7
+8	3	2	4
+9	2	1	2
+10 - completely	[c]	[c]	[c]
+Don't know	1	0	2
+Low or no trust (0 to 4)	66	63	68
+Neutral (5)	14	12	16
+High or moderately high trust (6 to 10)	19	17	21
+Weighted count	52971000		
+-- sheet '2.4' rows=31 cols=4
+Worksheet 2.4: Levels of trust in the courts and judicial system			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 2.4A to 2.4B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the courts and judicial system? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	4	3	5
+1	2	1	3
+2	2	2	3
+3	6	5	8
+4	6	5	8
+5	13	11	15
+6	12	10	14
+7	16	14	18
+8	17	15	19
+9	12	10	13
+10 - completely	6	4	7
+Don't know	4	3	5
+Low or no trust (0 to 4)	21	19	23
+Neutral (5)	13	11	15
+High or moderately high trust (6 to 10)	62	60	65
+Weighted count	53071000		
+-- sheet '2.5' rows=31 cols=4
+Worksheet 2.5: Levels of trust in international organisations			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 2.5A to 2.5B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust international organisations? 	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all	7	5	8
+1	4	3	5
+2	8	6	9
+3	8	7	10
+4	10	9	12
+5	19	17	21
+6	9	7	10
+7	9	8	11
+8	5	3	6
+9	2	1	2
+10 - completely	[c]	[c]	[c]
+Don't know	19	17	21
+Low or no trust (0 to 4)	37	34	40
+Neutral (5)	19	17	21
+High or moderately high trust (6 to 10)	25	23	27
+Weighted count	53128000		
+-- sheet '2.6' rows=31 cols=7
+Worksheet 2.6: Levels of trust in the regional civil service						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 2.6A to 2.6B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, where 0 is not at all and 10 is completely, how much do you trust the regional/local civil service (non-elected government employees at the regional level of government)?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all	5	4	6			
+1	3	2	4			
+2	6	4	7			
+3	6	5	8			
+4	7	5	8			
+5	18	16	20			
+6	13	11	15			
+7	13	11	15			
+8	10	8	11			
+9	4	3	5			
+10 - completely	2	1	3			
+Don't know	13	11	15			
+Low or no trust (0 to 4)	27	24	29			
+Neutral (5)	18	16	20			
+High or moderately high trust (6 to 10)	42	39	45			
+Weighted count	52618000					
+-- sheet '3.1' rows=102 cols=7
+Worksheet 3.1: Integrity						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains five tables.						
+Tables 3.1A to 3.1E are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+If a court were about to make a decision that could negatively impact the government's image, how likely do you think it is that the court would make the decision free from political influence?	UK adults %	UK adults LCL	UK adults UCL			
+0 - very unlikely	10	8	12			
+1	3	2	4			
+2	7	5	8			
+3	9	8	11			
+4	9	7	11			
+5	11	9	12			
+6	10	8	12			
+7	12	10	14			
+8	12	10	14			
+9	5	4	6			
+10 - very likely	6	4	7			
+Don't know	6	5	8			
+Unlikely (0 to 4)	38	36	41			
+Neutral (5)	11	9	12			
+Likely (6 to 10)	45	42	48			
+Weighted count	53023000					
+-- sheet '3.2' rows=83 cols=8
+Worksheet 3.2: Responsiveness							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains four tables.							
+Tables 3.2A to 3.2D are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+If many people complained about a public service that is working badly, how likely do you think it is that it would be improved?	UK adults %	UK adults LCL	UK adults UCL				
+0 - very unlikely	12	10	14				
+1	7	5	8				
+2	13	11	14				
+3	13	11	15				
+4	14.000000000000002	12	16				
+5	16	14	18				
+6	12	10	14				
+7	7	5	8				
+8	3	2	4				
+9	1	0	1				
+10 - very likely	1	1	2				
+Don't know	2	1	3				
+Unlikely (0 to 4)	58	56	61				
+Neutral (5)	16	14	18				
+Likely (6 to 10)	24	22	27				
+Weighted count	53062000						
+-- sheet '3.3' rows=83 cols=8
+Worksheet 3.3: Reliability							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains four tables.							
+Tables 3.3A to 3.3D are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+If there was a large-scale emergency, how likely do you think it is that government institutions would be ready to protect people’s lives?	UK adults %	UK adults LCL	UK adults UCL				
+0 - very unlikely	8	6	10				
+1	4	3	5				
+2	7	6	9				
+3	9	7.000000000000001	11				
+4	10	8	11				
+5	13	11	15				
+6	11	10	13				
+7	14	12	16				
+8	12	11	14				
+9	4	3	5				
+10 - very likely	5	4	6				
+Don't know	2	1	2				
+Unlikely (0 to 4)	38	36	41				
+Neutral (5)	13	11	15				
+Likely (6 to 10)	47	44	50				
+Weighted count	53071000						
+-- sheet '3.4' rows=83 cols=7
+Worksheet 3.4: Openness						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains four tables.						
+Tables 3.4A to 3.4D are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+If a decision affecting your local community is to be made by your local government, how likely do you think it is that you would have an opportunity to voice your opinion?	UK adults %	UK adults LCL	UK adults UCL			
+0 - very unlikely	8	6	9			
+1	4	3	6			
+2	8	6	9			
+3	13	11	15			
+4	10	9	12			
+5	14	12	16			
+6	14	12	15			
+7	12	11	14			
+8	8	7	10			
+9	2	1	3			
+10 - very likely	4	3	5			
+Don't know	3	2	4			
+Unlikely (0 to 4)	42	40	45			
+Neutral (5)	14.000000000000002	12	16			
+Likely (6 to 10)	40	37	43			
+Weighted count	53058000					
+-- sheet '3.5' rows=64 cols=8
+Worksheet 3.5: Fairness 							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains three tables.							
+Tables 3.5A to 3.5C are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+If a public employee interacted with the public in the area where you live, how likely do you think it is that they would treat all people equally? [note 4]	UK adults %	UK adults LCL	UK adults UCL				
+0 - very unlikely	7	5	8				
+1	2	1	3				
+2	5	4	7.000000000000001				
+3	8	6	9				
+4	10	8	12				
+5	16	14	18				
+6	12	10	14				
+7	17	15	19				
+8	10	8	12				
+9	5	3	6				
+10 - very likely	4	3	6				
+Don't know	5	3	6				
+Unlikely (0 to 4)	32	29	34				
+Neutral (5)	16	14	18				
+Likely (6 to 10)	48	45	51				
+Weighted count	53123000						
+-- sheet '3.6' rows=18 cols=8
+Worksheet 3.6: Overall drivers of trust in national government [note 5]							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains one table.							
+Table 3.6A is presented vertically.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+Generally speaking, which three of the following have the greatest impact on how much trust you have in the national government?	UK adults %	UK adults LCL	UK adults UCL				
+Government officials abide by the same rules as everybody else	63	61	66				
+Government policies balance the interest of current and future generations	59	56	62				
+The government competently carries out its tasks	50	48	53				
+The government engages with citizens on the most important issues, for example, through citizens assemblies, referendum and public consultations	49	46	52				
+The government delivers on electoral promises	48	45	50				
+Government policies match my preferences	14	12	16				
+Weighted count	53128000						
+Sample size	1919						
+							
+-- sheet '4.1' rows=31 cols=7
+Worksheet 4.1: Satisfaction with the education system						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 4.1A to 4.1B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, how satisfied are you with the education system in the UK?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all satisfied	3	2	5			
+1	2	1	3			
+2	6	4	7.000000000000001			
+3	7	5	8			
+4	9	8	11			
+5	13	11	15			
+6	14	12	16			
+7	20	18	22			
+8	13	11	15			
+9	4	3	5			
+10 - completely satisfied	2	1	3			
+Don't know	7.000000000000001	6	8			
+Dissatisfied (0 to 4)	27	24	28.999999999999996			
+Neutral (5)	13	11	15			
+Satisfied (6 to 10)	53	50	56.00000000000001			
+Weighted count	52839000					
+-- sheet '4.2' rows=31 cols=7
+Worksheet 4.2: Satisfaction with the healthcare system						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 4.2A to 4.2B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, how satisfied are you with the healthcare system in the UK?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all satisfied	7	6	8			
+1	5	3	6			
+2	8	6	9			
+3	9	8	11			
+4	9	8	11			
+5	12	10	13			
+6	14	12	16			
+7	15	13	17			
+8	12	10	14			
+9	5	4	7			
+10 - completely satisfied	4	2	5			
+Don't know	[c]	[c]	[c]			
+Dissatisfied (0 to 4)	38	35	41			
+Neutral (5)	12	10	13			
+Satisfied (6 to 10)	50	47	53			
+Weighted count	52828000					
+-- sheet '4.3' rows=31 cols=7
+Worksheet 4.3: Satisfaction with administrative services						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains two tables.						
+Tables 4.3A to 4.3B are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+On a scale of 0 to 10, how satisfied are you with the quality of administrative services in the UK (for example, applying for a passport, registering a birth or applying for benefits)?	UK adults %	UK adults LCL	UK adults UCL			
+0 - not at all satisfied	2	1	3			
+1	1	1	2			
+2	3	2	4			
+3	5	3	6			
+4	6	5	7			
+5	11	9	13			
+6	11	9	13			
+7	21	19	23			
+8	19	17	21			
+9	10	8	12			
+10 - completely satisfied	7	6	9			
+Don't know	4	3	5			
+Dissatisfied (0 to 4)	17	15	19			
+Neutral (5)	11	9	13			
+Satisfied (6 to 10)	68	65	71			
+Weighted count	52715000					
+-- sheet '4.4' rows=28 cols=8
+Worksheet 4.4: Use of public services							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains three tables.							
+Tables 4.4A to 4.4C are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+In the last 2 years, have you or somebody in your household been enrolled in an educational institution in the UK?	UK adults %	UK adults LCL	UK adults UCL				
+Yes	26	24	29				
+No	72	70	74				
+Don't know	2	1	3				
+Weighted count	52734000						
+Sample size	1907						
+							
+In the last 12 months, have you or somebody in your household personally made use of the healthcare system in the UK?	UK adults %	UK adults LCL	UK adults UCL				
+Yes	90	89	92				
+No	9	7.000000000000001	10				
+Don't know	[c]	[c]	[c]				
+Weighted count	52498000						
+Sample size	1903						
+							
+In the last 12 months, have you personally made use of an administrative service in the UK (for example, applying for a passport, registering a birth or applying for benefits)?	UK adults %	UK adults LCL	UK adults UCL				
+Yes	46	43	48				
+No	53	50	56				
+-- sheet '4.5' rows=179 cols=8
+Worksheet 4.5: Satisfaction with recent use of administrative services [note 6]							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains nine tables.							
+Tables 4.5A to 4.5I are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+Thinking about the most recent administrative service that you personally made use of, how satisfied were you with: Ease of obtaining the service?	UK adults %	UK adults LCL	UK adults UCL				
+0 - not at all satisfied	4	2	5				
+1	1	0	2				
+2	3	2	5				
+3	5	3	6				
+4	4	3	6				
+5	9	7	12				
+6	5	3	7				
+7	14	11	17				
+8	16	13	19				
+9	15	12	18				
+10 - completely satisfied	23	20	27				
+Don't know	[c]	[c]	[c]				
+Not applicable	[c]	[c]	[c]				
+Dissatisfied (0 to 4)	17	14	20				
+Neutral (5)	9	7	12				
+Satisfied (6 to 10)	73	70	77				
+-- sheet '5.1' rows=53 cols=8
+Worksheet 5.1: Political attitudes							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains three tables.							
+Tables 5.1A to 5.1C are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+How confident are you in your own ability to participate in politics? 	UK adults %	UK adults LCL	UK adults UCL				
+0 - not at all confident	15	13	17				
+1	3	2	4				
+2	7	6	9				
+3	9	7	11				
+4	9	7	11				
+5	12	10	14				
+6	10	8	11				
+7	12	10	14				
+8	10	9	12				
+9	3	2	4				
+10 - completely confident	5	4	7				
+Don't know	4	3	5				
+Not confident (0 to 4)	44	41	46				
+Neutral (5)	12	10	14				
+Confident (6 to 10)	41	38	43				
+Weighted count	52635000						
+-- sheet '5.2' rows=43 cols=7
+Worksheet 5.2: Recent participation in political activities [note 5]						
+United Kingdom, 27 September to 23 October 2023						
+This worksheet contains three tables.						
+Tables 5.2A to 5.2C are presented vertically with a blank row in between.						
+Some cells refer to notes which can be found on the Notes worksheet.						
+Some cells in these tables are empty because there are no associated data in the row.						
+LCL = Lower confidence level. UCL = Upper confidence level.						
+Back to contents						
+Over the last 12 months, have you done any of the following activities?	UK adults %	UK adults LCL	UK adults UCL			
+Voted in the last local election	60	57	62			
+Created or signed a petition (on paper or online)	41	39	44			
+Boycotted certain products for political reasons	22	20	24			
+Posted or forwarded political content on social media	15	13	17			
+Contacted a politician or government official or provided input or feedback on a government policy or law	15	13	17			
+Volunteered for social or environmental causes	13	11	14			
+Participated in a public consultation	13	11	14			
+Voted in a national referendum	7	6	9			
+Attended a meeting of a trade union or political party	6	5	7			
+Taken part in a street protest or demonstration	5	4	6			
+Ran for or held an elected office	1	0	1			
+None of the above	21	19	23			
+Weighted count	53128000					
+Sample size	1919					
+						
+Number of political activities over the last 12 months	UK adults %	UK adults LCL	UK adults UCL			
+-- sheet '6.1' rows=45 cols=4
+Worksheet 6.1: Confidence in government action on long-term challenges			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains two tables.			
+Tables 6.1A to 6.1B are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+How confident are you that the UK will succeed in reducing greenhouse gas emissions in the next ten years?	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all confident	16	14	18
+1	4	3	5
+2	8	6	9
+3	11	9	13
+4	10	8	12
+5	13	12	15
+6	13	11	15
+7	11	9	13
+8	7	5	8
+9	2	1	3
+10 - completely confident	2	1	3
+Don't know	3	2	4
+Not confident (0 to 4)	49	46	51
+Neutral (5)	13	12	15
+Confident (6 to 10)	35	32	37
+Weighted count	52474000		
+-- sheet '6.2' rows=121 cols=4
+Worksheet 6.2: Prioritisation of policy goals			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains six tables.			
+Tables 6.2A to 6.2F are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+How important do you think it is that each of the following goals are prioritised in the UK? Providing equal opportunities for all in the UK	UK adults %	UK adults LCL	UK adults UCL
+0 - not at all important	2	1	2
+1	0	0	1
+2	2	1	2
+3	2	1	3
+4	2	2	3
+5	7	5	8
+6	5	4	7
+7	10	9	12
+8	17	15	19
+9	11	9	13
+10 - extremely important	41	38	43
+Don't know	1	0	2
+Not important (0 to 4)	8	7	10
+Neutral (5)	7	5	8
+Important (6 to 10)	84	82	86
+Weighted count	52432000		
+-- sheet '6.3' rows=25 cols=6
+Worksheet 6.3: Most important issues for respondents [note 1] [note 5]					
+United Kingdom, 27 September to 23 October 2023					
+This worksheet contains one table.					
+Table 6.3A is presented vertically.					
+Some cells refer to notes which can be found on the Notes worksheet.					
+Some cells in these tables are empty because there are no associated data in the row.					
+LCL = Lower confidence level. UCL = Upper confidence level.					
+Back to contents					
+What do you think are the three most important issues facing the UK?	UK adults %	UK adults LCL	UK adults UCL		
+Rising prices, inflation or cost of living	63	61	66		
+The availability, quality or affordability of essential services (for example, healthcare or education)	49	46	52		
+Climate change or other threats to the environment	28	26	31		
+The availability, quality or affordability of housing	28	26	31		
+Immigration	28	25	30		
+Poverty and social inequality	26	24	28		
+Crime or violence	26	23	28		
+Spread of misinformation or fake news	10	8	11		
+Defence or foreign affairs (for example, war or terrorism)	9	8	11		
+Corruption	9	7	10		
+Dangers of social media	8	6	10		
+Unemployment and jobs	7	5	8		
+None of the above	[c]	[c]	[c]		
+Weighted count	53128000				
+Sample size	1919				
+					
+-- sheet '7.1' rows=54 cols=4
+Worksheet 7.1: News and information sources			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains three tables.			
+Tables 7.1A to 7.1C are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+On a typical day, from which of the following sources, if any, do you get information about politics and current affairs? [note 5]	UK adults %	UK adults LCL	UK adults UCL
+News or current affairs programmes on TV or the radio	77	75	80
+Newspapers, magazines or online news websites	58	55	60
+Conversation with friends, family, colleagues, teachers	55	53	58
+Social media (such as Facebook, Twitter/X, YouTube, Instagram, TikTok or Reddit)	49	47	52
+Other	4	3	5
+You do not get any information on politics and current affairs	2	1	3
+Don't know	1	0	2
+Weighted count	53128000		
+Sample size	1919		
+			
+What percentage of information on politics and current affairs do you get from social media (for example, Facebook, Twitter/X, YouTube, Instagram, TikTok, Reddit)?	UK adults %	UK adults LCL	UK adults UCL
+0% to 25%	63	61	66
+26% to 50%	17	15	19
+51% to 75%	12	10	13
+76% to 100%	8	6	10
+Average amount of information from social media (median %)	14		
+-- sheet '7.2' rows=51 cols=4
+Worksheet 7.2: Government statistics			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains four tables.			
+Tables 7.2A to 7.2D are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+In general, would you say that government institutions provide statistics that are easy to find?	UK adults %	UK adults LCL	UK adults UCL
+Never	3	2	5
+Rarely	17	15	19
+Sometimes	43	40	46
+Often	21	18	23
+Always	3	2	5
+Don't know	12	10	13
+Not applicable	1	1	2
+Weighted count	52352000		
+Sample size	1895		
+			
+In general, would you say that government institutions provide statistics that are easy to understand?	UK adults %	UK adults LCL	UK adults UCL
+Never	3	2	4
+Rarely	18	16	20
+Sometimes	45	42	48
+Often	21	18	23
+Always	4	3	5
+-- sheet '8.1' rows=32 cols=4
+Worksheet 8.1: Voting in the last general election			
+United Kingdom, 27 September to 23 October 2023			
+This worksheet contains three tables.			
+Tables 8.1A to 8.1C are presented vertically with a blank row in between.			
+Some cells refer to notes which can be found on the Notes worksheet.			
+Some cells in these tables are empty because there are no associated data in the row.			
+LCL = Lower confidence level. UCL = Upper confidence level.			
+Back to contents			
+Did you vote in the last UK national election on 12 December 2019? 	UK adults %	UK adults LCL	UK adults UCL
+Yes	80	78	82
+No	14	12	16
+Don't know	3	2	5
+Prefer not to answer	2	1	3
+Weighted count	52460000		
+Sample size	1900		
+			
+Is the party you voted for in the last national election on 12 December 2019 currently part of the government? [note 7]	%	LCL	UCL
+Yes	44	41	47
+No	45	42	48
+Don't know	3	2	4
+Prefer not to answer	7	6	9
+Weighted count	41906000		
+Sample size	1615		
+			
+Is the party you would have most likely voted for in the last national election on 12 December 2019 currently part of the government? [note 8]	%	LCL	UCL
+-- sheet '8.2' rows=47 cols=8
+Worksheet 8.2: Demographic information							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains four tables.							
+Tables 8.2A to 8.2D are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+Were you born in the UK?	UK adults %	UK adults LCL	UK adults UCL				
+Yes	89	87	91				
+No	11	9	12				
+Don't know	[c]	[c]	[c]				
+Prefer not to answer	[c]	[c]	[c]				
+Weighted count	52293000						
+Sample size	1894						
+							
+How would you describe yourself? 	UK adults %	UK adults LCL	UK adults UCL				
+Male	48	48	48				
+Female	51	51	51				
+Other	1	1	1				
+Prefer not to answer	[c]	[c]	[c]				
+Weighted count	52416000						
+Sample size	1900						
+							
+In which region do you usually live? 	UK adults %	UK adults LCL	UK adults UCL				
+-- sheet '8.3' rows=41 cols=8
+Worksheet 8.3: Socio-economic information							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains three tables.							
+Tables 8.3A to 8.3C are presented vertically with a blank row in between.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+In general, thinking about the next year or two, how concerned are you about your household's finances and overall economic well-being?	UK adults %	UK adults LCL	UK adults UCL				
+Not at all concerned	7	6	8				
+Not so concerned	18	16	20				
+Somewhat concerned	41	38	43				
+Very concerned	32	30	35				
+Don’t know	1	0	2				
+Prefer not to answer	1	0	2				
+Weighted count	52447000						
+Sample size	1899						
+							
+What is the highest level of education you have successfully completed (usually by obtaining a certificate or diploma)? 	UK adults %	UK adults LCL	UK adults UCL				
+No formal education	3	2	4				
+Primary education	3	2	4				
+Lower secondary education (GSCEs or equivalent)	37	35	38				
+Upper secondary education (A-Levels, vocational qualification or equivalent)	19	19	19				
+University education (Bachelor’s, Master’s or Doctorate)	38	38	38				
+Lower secondary education or less	43	43	44				
+-- sheet '8.4' rows=27 cols=8
+Worksheet 8.4: Household income [note 9]							
+United Kingdom, 27 September to 23 October 2023							
+This worksheet contains one table.							
+Table 8.4A is presented vertically.							
+Some cells refer to notes which can be found on the Notes worksheet.							
+Some cells in these tables are empty because there are no associated data in the row.							
+LCL = Lower confidence level. UCL = Upper confidence level.							
+Back to contents							
+Could you please indicate your household’s monthly income (that is, after income taxes have been paid)?	UK adults %	UK adults LCL	UK adults UCL				
+£0 to £1,000	5	4	6				
+£1,001 to £1,800	13	11	15				
+£1,801 to £2,300 	10	9	12				
+£2,301 to £2,700 	7	6	8				
+£2,701 to £3,100 	6	5	8				
+£3,101 to £3,600 	7	6	8				
+£3,601 to £4,000 	8	6	9				
+£4,100 to £4,900	7	6	8				
+£4,901 to £5,900 	6	5	7				
+£5,901 to £10,900 	9	7	10				
+Over £10,900 	11	9	12				
+Don't know	3	2	4				
+Prefer not to answer	8	6	10				
+Bottom 20% (£0 to £1,800)	18	16	20				
+Mid 60% (£1,801 to £4,900	46	43	48				
+Top 20% (£4,901 and above)	26	23	28				

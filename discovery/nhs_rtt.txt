@@ -1,0 +1,35 @@
+## nhs_rtt
+{
+  "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx",
+  "link_text": "RTT Overview Timeseries Including Estimates for Missing Trusts May26 (XLS, 116K)",
+  "path": "discovery/raw/nhs_rtt.xlsx",
+  "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "bytes": 141255
+}
+sheets=["Full Time Series"]
+-- sheet 'Full Time Series' rows=265 cols=59
+																			
+	Title: Referral to Treatment (RTT) Waiting Times, England																		
+																			
+	Period: April 2007 to May 2026																		
+	Main Source: NHS England, monthly RTT data collection																		
+	Unique Patient Source: Waiting List Minimum Dataset																		
+	Basis: Commissioner																		
+	Contact: england.rtt@nhs.net																		
+	Revised: 	-																	
+																			
+	Year	Month	Incomplete RTT pathways																
+			Median wait (weeks)	92nd percentile (weeks)	No. within 18 weeks	No. within 18 weeks with estimates for missing data	% within 18 weeks	% within 18 weeks with estimates for missing data	No. > 18 weeks	No. > 18 weeks with estimates for missing data	No. > 52 weeks	No. > 52 weeks with estimates for missing data	% > 52 weeks	% > 52 weeks with estimates for missing data	No. > 65 weeks	No. > 65 weeks with estimates for missing data	No. > 78 weeks	No. > 78 weeks with estimates for missing data	No. > 104 weeks
+	2007/08	2007-04-01 00:00:00	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		2007-05-01 00:00:00	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		2007-06-01 00:00:00	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		2007-07-01 00:00:00	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		2007-08-01 00:00:00	14.28778318509817	52+	2395656	2395656	0.5721688264603506	0.5721688264603506	1791318	1791318	578682	578682	0.13821007725388312	0.13821007725388312	-	-	-	-	-
+		2007-09-01 00:00:00	13.354009517397209	52+	2364349	2364349	0.5914493648736439	0.5914493648736439	1633202	1633202	401725	401725	0.10049277670253613	0.10049277670253613	-	-	-	-	-
+		2007-10-01 00:00:00	13.154119977713119	52+	2337604	2337604	0.5933274633542996	0.5933274633542996	1602217	1602217	387161	387161	0.09826867768865641	0.09826867768865641	-	-	-	-	-
+		2007-11-01 00:00:00	13.326543200113871	52+	2269968	2269968	0.5787837821988077	0.5787837821988077	1651994	1651994	415215	415215	0.10586920526002037	0.10586920526002037	-	-	-	-	-
+		2007-12-01 00:00:00	14.282357862916829	52+	2173205	2180207	0.5639069747648836	0.5646248954701442	1680631	1681130	434180	434188	0.1126617738793244	0.11244498990893569	-	-	-	-	-
+		2008-01-01 00:00:00	12.278634851466592	52+	2151167	2151167	0.6127917977163527	0.6127917977163527	1359270	1359270	306034	306034	0.08717831996415261	0.08717831996415261	-	-	-	-	-
+		2008-02-01 00:00:00	10.521816991450358	52+	2024628	2024628	0.6497370247744517	0.6497370247744517	1091445	1091445	253955	253955	0.08149841162257752	0.08149841162257752	-	-	-	-	-
+		2008-03-01 00:00:00	9.827390841320554	51.63065847571512	2017806	2017806	0.6601234660795431	0.6601234660795431	1038904	1038904	240689	240689	0.07874119559918998	0.07874119559918998	-	-	-	-	-
+	2008/09	2008-04-01 00:00:00	9.017207824337252	51.09075369075368	2041274	2041274	0.6942471269645305	0.6942471269645305	898996	898996	225860	225860	0.07681607471422693	0.07681607471422693	-	-	-	-	-
