@@ -15,9 +15,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create source archive
         run: |
-          tar --exclude=.git --exclude=.wrangler --exclude=source-bundle.b64 --exclude=source-bundle --exclude=discovery -czf collapse-index-source.tar.gz .
+          tar --exclude=.git --exclude=.wrangler --exclude=source-bundle.b64 --exclude=source-bundle --exclude=discovery -czf /tmp/collapse-index-source.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: collapse-index-source
-          path: collapse-index-source.tar.gz
+          path: /tmp/collapse-index-source.tar.gz
           retention-days: 1
