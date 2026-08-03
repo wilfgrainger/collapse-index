@@ -1,0 +1,43 @@
+name: Materialise RC Fixtures
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - fixtures/public/**
+      - fixtures/ons/enpop/**
+
+permissions:
+  contents: write
+
+jobs:
+  materialise:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/graphite-completion
+      - name: Fetch exact official evidence fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p fixtures/public/{child-poverty,food-security,housing,nhs-rtt,trust} fixtures/ons/enpop
+          fetch() { curl --fail --location --retry 3 --max-time 180 "$1" --output "$2"; test -s "$2"; }
+          fetch 'https://www.ons.gov.uk/explore-local-statistics/api/v1/data.csv?indicator=children-in-relative-poverty-after-housing&time=all' fixtures/public/child-poverty/2026-03-26.csv
+          fetch 'https://fsaopendata.blob.core.windows.net/opendatacatalog/W1-11Trends_Allcountries_pub_postPubAmended_300426b.xlsx' fixtures/public/food-security/2026-05-07.xlsx
+          fetch 'https://fsaopendata.blob.core.windows.net/opendatacatalog/2305388801FoodandYou2TrendsW1to11SPSSUserGuidev2.xlsx' fixtures/public/food-security/2026-05-07-user-guide.xlsx
+          fetch 'https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx' fixtures/public/housing/2025-08-18.xlsx
+          fetch 'https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2023/privaterentalaffordability2023englandwales.xlsx' fixtures/public/housing/2023-10-23.xlsx
+          fetch 'https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx' fixtures/public/trust/2024-03-01.xlsx
+          fetch 'https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2022/bulletintrustingovernmentreftables.xlsx' fixtures/public/trust/2022-07-13.xlsx
+          fetch 'https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx' fixtures/public/nhs-rtt/2026-07-09.xlsx
+          fetch 'https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/timeseries/enpop/pop/data' fixtures/ons/enpop/2025-11-live.json
+          find fixtures/public fixtures/ons/enpop -type f -printf '%s %p\n'
+      - name: Commit evidence fixtures
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fixtures/public fixtures/ons/enpop
+          git diff --cached --quiet || git commit -m 'test: add exact release-candidate evidence fixtures [skip ci]'
+          git push
