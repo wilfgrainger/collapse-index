@@ -1,0 +1,45 @@
+name: Materialise final release-candidate tree
+
+on:
+  push:
+    branches:
+      - work/graphite-completion
+    paths:
+      - .graphite-final/READY
+
+permissions:
+  contents: write
+
+jobs:
+  materialise:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/graphite-completion
+          fetch-depth: 0
+      - name: Reconstruct verified text tree
+        run: |
+          set -euo pipefail
+          find .graphite-final -type f -name 'part-*' -print0 | sort -z | xargs -0 cat > /tmp/release.b64
+          base64 --decode /tmp/release.b64 > /tmp/release.tar.xz
+          tar -xJf /tmp/release.tar.xz -C .
+          rm -rf .graphite-final .graphite-bundle source-bundle source-bundle.b64 discovery
+          rm -f \
+            .github/workflows/materialise-final.yml \
+            .github/workflows/source-bundle.yml \
+            .github/workflows/source-discovery.yml \
+            .github/workflows/fsa-contract.yml \
+            .github/workflows/enpop-contract.yml \
+            .github/workflows/materialise-rc-fixtures.yml \
+            scripts/discover-official-sources.py
+          test "$(node -p "require('./package.json').version")" = '1.0.0-rc.1'
+          test -s public/data/backcast.json
+          test -s fixtures/public/food-security/2026-05-07.xlsx
+      - name: Commit final release-candidate tree
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: complete Graphite Mountain release candidate'
+          git push

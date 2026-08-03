@@ -1,0 +1,24 @@
+name: Official Source Discovery
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install inspection libraries
+        run: python -m pip install --quiet requests beautifulsoup4 openpyxl xlrd
+      - name: Discover and inspect official resources
+        run: python scripts/discover-official-sources.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-source-discovery
+          path: discovery
+          retention-days: 1

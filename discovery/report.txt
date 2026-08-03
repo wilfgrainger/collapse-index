@@ -1,0 +1,48 @@
+FETCH https://www.ons.gov.uk/explore-local-statistics/api/v1/data.csv?indicator=children-in-relative-poverty-after-housing&time=all
+  status=200 final=https://www.ons.gov.uk/explore-local-statistics/api/v1/data.csv?indicator=children-in-relative-poverty-after-housing&time=all type=None bytes=40864
+FETCH https://environment.data.gov.uk/flood-monitoring/id/floods
+  status=200 final=https://environment.data.gov.uk/flood-monitoring/id/floods type=application/json bytes=2241
+FETCH https://data.food.gov.uk/catalog/datasets/e8563667-8457-4662-9642-aeed6454113f
+  status=200 final=https://data.food.gov.uk/catalog/datasets/e8563667-8457-4662-9642-aeed6454113f type=text/html; charset=utf-8 bytes=36454
+LINKS fsa_food: 26
+FETCH https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/rtt-data-2026-27/
+  status=200 final=https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/rtt-data-2026-27/ type=text/html; charset=UTF-8 bytes=67140
+LINKS nhs_rtt: 220
+  CANDIDATE text='RTT Overview Timeseries Including Estimates for Missing Trusts May26 (XLS, 116K)' href=https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx
+FETCH https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx
+  status=200 final=https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet bytes=141255
+FETCH https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland
+  status=200 final=https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland type=text/html; charset=UTF-8 bytes=46947
+LINKS ons_housing: 83
+  CANDIDATE text='xlsx (84.4 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx
+  CANDIDATE text='xlsx (71.2 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2023/privaterentalaffordability2023englandwales.xlsx
+  CANDIDATE text='xlsx (107.2 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2022/privaterentalaffordability2022englandwalesni.xlsx
+  CANDIDATE text='xlsx (106.2 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2021/privaterentalaffordability2021englandwalesni1.xlsx
+  CANDIDATE text='xlsx (95.0 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2013to2020/privaterentalaffordability.xlsx
+FETCH https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx
+  status=200 final=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8 bytes=86471
+FETCH https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk
+  status=200 final=https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk type=text/html; charset=UTF-8 bytes=41474
+LINKS ons_trust: 79
+  CANDIDATE text='xlsx (417.9 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx
+  CANDIDATE text='xlsx (374.5 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2022/bulletintrustingovernmentreftables.xlsx
+FETCH https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx
+  status=200 final=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8 bytes=427966
+FETCH https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing
+  status=200 final=https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing type=text/html; charset=UTF-8 bytes=53394
+LINKS ons_wellbeing: 88
+  CANDIDATE text='xlsx (1.3 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/june2026/ukmeasuresofnationalwellbeingjune2026.xlsx
+  CANDIDATE text='xlsx (1.1 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/february2025/ukmeasuresofnationalwellbeingfeb20251.xlsx
+  CANDIDATE text='xlsx (1.1 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/november2024/ukmeasuresofnationalwellbeingnov2024.xlsx
+  CANDIDATE text='xlsx (1.1 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/august2024/ukmeasuresofnationalwellbeingaug2024.xlsx
+  CANDIDATE text='xlsx (1.0 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/may2024/ukmeasuresofnationalwellbeingmay2024final.xlsx
+  CANDIDATE text='xlsx (1.0 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/february2024/ukmeasuresofnationalwellbeingfeb2024.xlsx
+  CANDIDATE text='xlsx (1.0 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/november2023/ukmeasuresofnationalwellbeingnov2023.xlsx
+  CANDIDATE text='xlsx (1008.5 KB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/august2023/ukmeasuresofnationalwellbeingaug2023.xlsx
+  CANDIDATE text='xlsx (1.0 MB)' href=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/july2023/ukmeasuresofnationalwellbeingjuly2023.xlsx
+FETCH https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/june2026/ukmeasuresofnationalwellbeingjune2026.xlsx
+  status=429 final=https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/june2026/ukmeasuresofnationalwellbeingjune2026.xlsx type=text/html; charset=UTF-8 bytes=1202759
+ERROR ons_wellbeing: HTTPError: 429 Client Error: Too Many Requests for url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/ukmeasuresofnationalwellbeing/june2026/ukmeasuresofnationalwellbeingjune2026.xlsx
+FETCH https://api-portal.naturalresources.wales/
+  status=200 final=https://api-portal.naturalresources.wales/ type=text/html bytes=8304
+LINKS nrw_portal: 11

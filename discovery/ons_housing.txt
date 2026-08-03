@@ -1,0 +1,138 @@
+## ons_housing
+{
+  "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx",
+  "link_text": "xlsx (84.4 KB)",
+  "path": "discovery/raw/ons_housing.xlsx",
+  "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
+  "bytes": 86471
+}
+sheets=["Cover sheet", "Metadata", "Terms and Conditions", "Table 1", "Table 2", "Table 3", "Table 4"]
+-- sheet 'Cover sheet' rows=19 cols=16383
+Private rental affordability, England, Wales and Northern Ireland: 2024 																			
+Contents table																			
+Link to Sheet	Description																		
+Metadata	Metadata																		
+Terms and Conditions	Terms and Conditions																		
+Table 1	Table 1: Mean rent price by country and region, financial year ending 2016 to 2024 (£ per month)																		
+Table 2	Table 2: Median income of private renting households, by country and region, financial year ending 2016 to 2024 (£ per month)																		
+Table 3	Table 3: Proportion of income of private renting households that is equivalent to rent, financial year ending 2016 to 2024																		
+Table 4	Table 4: English and Welsh local authorities, proportion of income of private renting households that is equivalent to rent, financial year ending 2016 to 2024																		
+																			
+Contact Details																			
+Housing Analysis Team																			
+Office for National Statistics																			
+better.info@ons.gov.uk																			
+																			
+Feedback - Click a link - tell us what you think																			
+This met my needs, please produce it next year																			
+I need something slightly different (please specify)																			
+This is not what I need at all (please specify)																			
+-- sheet 'Metadata' rows=19 cols=1
+Metadata
+By expressing monthly rent prices as a percentage of total monthly household income, an indication is provided of the affordability of private renting. We consider an area to have affordable private rent if its rent price is equivalent to or less than 30% of its privately-renting household income. 
+More details are available in the Private rental affordability Quality and Methodology Information, or in Section 9 of the accompanying bulletin.
+Rent prices
+Rents are a mean weighted average, modelled using an internationally recognised process.
+Rent prices are rounded to the nearest pound (£).
+Private rent prices are republished from our Private rent and house prices, UK series. These rents include a representative mix of new and existing rents in England and Wales. Northern Ireland data are for advertised new lets.We advise users to bear this in mind when interpreting estimates for  and comparing UK countries. 
+The estimates in this bulletin are not directly comparable with previous editions. We have  changed the way we compare rents and incomes, using September based rents to best represent a financial year.
+Income of private renting households
+Incomes are median averages, for the gross monthly income of privately-renting households
+Incomes are rounded to the nearest pound (£).
+Private renting household income are calculated using data from the Family Resources Survey (FRS), conducted by The Department for Work and Pensions (DWP), Natcen and ONS and accessed via the UKDataService. We filter the FRS to only include those who are privately renting a furnished or unfurnished property, to work out the income of private renters. We use a grossing factor weight to adjust for potential bias in responses to the FRS.
+Proportion of income equivalent to rent
+To calculate the affordability of private renting, we calculate the percentage of the privately-renting household income that is equivalent to monthly rent for an area. 
+Affordability ratios are rounded to the nearest 1 decimal place.
+Any year-on-year changes to affordability should be treated with caution, as the private renters' income is derived from a relatively small sample size and so will likely show fluctuations year-on-year, especially at the regional or local level, so we recommend looking at changes over the whole data time series.
+Local authority level data, Table 4
+To create the local authority level versions of these rents we have scaled the incomes using an additional data source. We used earnings estimates from the Annual Survey of Hours and Earnings (ASHE) series, to scale the FRS incomes. These modelled local authority ratios are official statistics under development, involving additional uncertainty over and above the use of the FRS incomes, and so caution should be used, especially when looking at year-on-year changes.
+The Local Authority level estimates are not directly comparable with previous editions. We have changed the source we use to model incomes.
+-- sheet 'Terms and Conditions' rows=13 cols=1
+Terms and Conditions
+About us
+The Office for National Statistics (ONS) is the executive office of the UK Statistics Authority, a non-ministerial department which reports directly to Parliament. ONS is the UK government’s single largest statistical producer. It compiles information about the UK’s society and economy, and provides the evidence-base for policy and decision-making, the allocation of resources, and public accountability.
+Copyright and reproduction 
+© Crown copyright 2025
+You may re-use this information (not including logos) free of charge in any format or medium, under the terms of the Open Government Licence:
+These statistics are licensed under the Open Government Licence v.3.0. Users should include a source accreditation to ONS - Source: Office for National Statistics.
+Open Government licence
+Write to Information Policy Team, The National Archives, Kew, London TW9 4DU
+email: psi@nationalarchives.gov.uk
+
+Income Data are modelled using data aggregated from the Family Resources Survey, downloaded from the UK Data Service. The most recent data collection accessed was:
+Office for National Statistics, Social and Vital Statistics Division, NatCen Social Research, Department for Work and Pensions. (2025). Family Resources Survey, 2005/06-2023/24: Secure Access. [data collection]. 3rd Edition. UK Data Service. SN: 9256, DOI: http://doi.org/10.5255/UKDA-SN-9256-3
+-- sheet 'Table 1' rows=16 cols=11
+Table 1: Mean rent price by country and region, financial year ending 2016 to 2024 (£ per month)										
+Source: Price Index of Private Rents from the Office of National Statistics										
+Country or region code	Country or region name	2015/16	2016/17	2017/18	2018/19	2019/20	2020/21	2021/22	2022/23	2023/24
+E92000001	England	975	1009	1027	1035	1058	1073	1087	1142	1232
+W92000004	Wales	545	553	566	576	589	599	613	644	702
+N92000002	Northern Ireland	536	541	552	569	580	594	633	692	751
+E12000001	North East	535	547	554	556	559	568	585	607	641
+E12000002	North West	600	613	628	642	651	665	687	731	788
+E12000003	Yorkshire and The Humber	587	594	608	617	631	645	663	702	751
+E12000004	East Midlands	575	589	609	635	653	665	688	725	772
+E12000005	West Midlands	627	647	667	680	694	710	734	765	823
+E12000006	East of England	827	873	905	922	940	949	987	1031	1091
+E12000007	London	1643	1695	1698	1681	1723	1745	1709	1785	1957
+E12000008	South East	951	997	1024	1037	1057	1065	1091	1146	1229
+E12000009	South West	792	822	851	866	884	904	945	1002	1072
+										
+-- sheet 'Table 2' rows=15 cols=11
+Table 2: Median income of private renting households, by country and region, financial year ending 2016 to 2024 (£ per month)										
+Source: Family Resources Survey from the Department for Work and Pensions										
+Country or region code	Country or region name	2015/16	2016/17	2017/18	2018/19	2019/20	2020/21	2021/22	2022/23	2023/24
+E92000001	England	2474	2574	2631	2800	2991	2826	3048	3448	3396
+W92000004	Wales	1731	1870	2148	2026	2274	2348	2391	2452	2713
+N92000002	Northern Ireland	2096	2235	2335	2274	2652	2605	2635	2761	2974
+E12000001	North East	1909	2000	1883	1909	1965	1918	2144	2448	3244
+E12000002	North West	1987	2183	2248	2609	2526	2513	2409	2391	2809
+E12000003	Yorkshire and The Humber	2235	2065	1991	2218	2439	1852	2613	2818	2739
+E12000004	East Midlands	2304	2183	2431	2826	2691	2848	2661	2818	3161
+E12000005	West Midlands	2304	2439	2513	2339	2696	3205	2422	3091	2822
+E12000006	East of England	2496	2674	2718	3057	3048	3005	3561	3805	3774
+E12000007	London	3161	2974	3313	3631	3778	3596	4157	4639	4700
+E12000008	South East	2861	2909	2865	2900	3296	2957	3257	3709	4152
+E12000009	South West	2470	2765	2483	2548	2848	2900	2757	3622	3409
+-- sheet 'Table 3' rows=15 cols=11
+Table 3: Ratio of private rent to median income of private renting households, financial year ending 2016 to 2024										
+Source: Private rental affordability, England, Wales and Northern Ireland 										
+Country or region code	Country or region name	2015/16	2016/17	2017/18	2018/19	2019/20	2020/21	2021/22	2022/23	2023/24
+E92000001	England	0.394	0.392	0.39	0.37	0.354	0.38	0.357	0.331	0.363
+W92000004	Wales	0.315	0.296	0.264	0.284	0.259	0.255	0.256	0.263	0.259
+N92000002	Northern Ireland	0.256	0.242	0.236	0.25	0.219	0.228	0.24	0.251	0.253
+E12000001	North East	0.28	0.274	0.294	0.291	0.284	0.296	0.273	0.248	0.198
+E12000002	North West	0.302	0.281	0.279	0.246	0.258	0.265	0.285	0.306	0.281
+E12000003	Yorkshire and The Humber	0.263	0.288	0.305	0.278	0.259	0.348	0.254	0.249	0.274
+E12000004	East Midlands	0.25	0.27	0.251	0.225	0.243	0.233	0.259	0.257	0.244
+E12000005	West Midlands	0.272	0.265	0.265	0.291	0.257	0.222	0.303	0.247	0.292
+E12000006	East of England	0.331	0.326	0.333	0.302	0.308	0.316	0.277	0.271	0.289
+E12000007	London	0.52	0.57	0.513	0.463	0.456	0.485	0.411	0.385	0.416
+E12000008	South East	0.332	0.343	0.357	0.358	0.321	0.36	0.335	0.309	0.296
+E12000009	South West	0.321	0.297	0.343	0.34	0.31	0.312	0.343	0.277	0.314
+-- sheet 'Table 4' rows=320 cols=13
+Table 4: English and Welsh local authorities, ratio of private rent price to median income of private renting households, financial year ending 2016 to 2024												
+Source: Private rental affordability, England, Wales and Northern Ireland and Annual Survey of Hours and Earnings from the Office for National Statistics												
+LA code	LA name	Country or region code	Region name	2015/16	2016/17	2017/18	2018/19	2019/20	2020/21	2021/22	2022/23	2023/24
+E06000001	Hartlepool	E12000001	North East	0.235	0.23	0.249	0.254	0.252	0.256	0.228	0.204	0.159
+E06000002	Middlesbrough	E12000001	North East	0.266	0.254	0.28	0.281	0.27	0.284	0.253	0.217	0.179
+E06000003	Redcar and Cleveland	E12000001	North East	0.255	0.253	0.264	0.265	0.263	0.277	0.257	0.218	0.175
+E06000004	Stockton-on-Tees	E12000001	North East	0.269	0.261	0.286	0.27	0.252	0.262	0.248	0.23	0.192
+E06000005	Darlington	E12000001	North East	0.235	0.233	0.258	0.253	0.246	0.248	0.227	0.214	0.168
+E06000047	County Durham	E12000001	North East	0.255	0.241	0.257	0.255	0.251	0.262	0.241	0.22	0.172
+E06000057	Northumberland	E12000001	North East	0.264	0.252	0.278	0.279	0.27	0.269	0.24	0.221	0.178
+E08000021	Newcastle upon Tyne	E12000001	North East	0.343	0.348	0.384	0.381	0.374	0.389	0.364	0.337	0.274
+E08000022	North Tyneside	E12000001	North East	0.307	0.298	0.31	0.301	0.304	0.322	0.293	0.264	0.205
+E08000023	South Tyneside	E12000001	North East	0.291	0.294	0.311	0.307	0.286	0.293	0.269	0.248	0.192
+E08000024	Sunderland	E12000001	North East	0.271	0.261	0.28	0.277	0.268	0.279	0.266	0.241	0.187
+E08000037	Gateshead	E12000001	North East	0.283	0.28	0.301	0.301	0.302	0.315	0.284	0.255	0.208
+E06000006	Halton	E12000002	North West	0.252	0.232	0.223	0.195	0.204	0.213	0.223	0.223	0.21
+E06000007	Warrington	E12000002	North West	0.28	0.269	0.267	0.239	0.248	0.244	0.257	0.274	0.243
+E06000008	Blackburn with Darwen	E12000002	North West	0.251	0.229	0.234	0.21	0.22	0.222	0.231	0.243	0.207
+E06000009	Blackpool	E12000002	North West	0.325	0.286	0.264	0.228	0.243	0.239	0.25	0.267	0.224
+E06000049	Cheshire East	E12000002	North West	0.318	0.295	0.286	0.253	0.267	0.278	0.296	0.315	0.298
+E06000050	Cheshire West and Chester	E12000002	North West	0.315	0.285	0.277	0.239	0.262	0.258	0.269	0.297	0.279
+E06000063	Cumberland	E12000002	North West	0.219	0.199	0.194	0.172	0.177	0.174	0.192	0.207	0.185
+E06000064	Westmorland and Furness	E12000002	North West	0.285	0.267	0.255	0.219	0.234	0.237	0.255	0.273	0.228
+E07000117	Burnley	E12000002	North West	0.263	0.239	0.242	0.212	0.226	0.237	0.244	0.252	0.216
+E07000118	Chorley	E12000002	North West	0.284	0.264	0.263	0.235	0.243	0.242	0.257	0.277	0.244

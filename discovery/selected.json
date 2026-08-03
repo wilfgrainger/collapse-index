@@ -1,0 +1,35 @@
+{
+  "child_poverty": {
+    "url": "https://www.ons.gov.uk/explore-local-statistics/api/v1/data.csv?indicator=children-in-relative-poverty-after-housing&time=all",
+    "path": "discovery/raw/child_poverty.csv",
+    "content_type": null,
+    "bytes": 40864
+  },
+  "ea_floods": {
+    "url": "https://environment.data.gov.uk/flood-monitoring/id/floods",
+    "path": "discovery/raw/ea_floods.json",
+    "content_type": "application/json",
+    "bytes": 2241
+  },
+  "nhs_rtt": {
+    "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/07/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-May26-XLS-116K-3jBgba.xlsx",
+    "link_text": "RTT Overview Timeseries Including Estimates for Missing Trusts May26 (XLS, 116K)",
+    "path": "discovery/raw/nhs_rtt.xlsx",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "bytes": 141255
+  },
+  "ons_housing": {
+    "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/housing/datasets/privaterentalaffordabilityengland/2024/privaterentalaffordability2024.xlsx",
+    "link_text": "xlsx (84.4 KB)",
+    "path": "discovery/raw/ons_housing.xlsx",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
+    "bytes": 86471
+  },
+  "ons_trust": {
+    "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/wellbeing/datasets/trustingovernmentuk/2023/bulletintrustingovernmentreftables2023.xlsx",
+    "link_text": "xlsx (417.9 KB)",
+    "path": "discovery/raw/ons_trust.xlsx",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8",
+    "bytes": 427966
+  }
+}

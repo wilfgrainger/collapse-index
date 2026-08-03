@@ -1,0 +1,23 @@
+name: Source Bundle
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create source archive
+        run: |
+          tar --exclude=.git --exclude=.wrangler --exclude=source-bundle.b64 --exclude=source-bundle --exclude=discovery -czf /tmp/collapse-index-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: collapse-index-source
+          path: /tmp/collapse-index-source.tar.gz
+          retention-days: 1
