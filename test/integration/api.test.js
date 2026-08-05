@@ -32,7 +32,12 @@ function createAssets() {
 }
 
 async function ingestedEnv() {
-  const env = { DB: await createTestDatabase(), EVIDENCE: createTestBucket(), ASSETS: createAssets() };
+  const env = {
+    CLOCK_NOW: "2026-08-01T09:00:00.000Z",
+    DB: await createTestDatabase(),
+    EVIDENCE: createTestBucket(),
+    ASSETS: createAssets()
+  };
   await runIngestion(env, {
     trigger: "test",
     now: "2026-08-01T09:00:00.000Z",
