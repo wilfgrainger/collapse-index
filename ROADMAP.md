@@ -43,7 +43,7 @@
 - [x] implement ONS real GDP-per-head collector for `N3Y6` (annual — see D-017)
 - [x] implement ONS working-days-lost collector for `BBFW/LMS`
 - [x] version ONS population denominators where derived rates require them (`MGRZ/LMS` — see D-018)
-- [ ] archive fixtures and validate at least two releases per source — one release archived per source; the second arrives with the August ONS releases
+- [x] archive fixtures and validate at least two releases per source — `2026-07-live` and `2026-11-live`, including a real N3Y6 revision
 
 ### Remaining core indicators
 
@@ -63,6 +63,22 @@
 - [x] show structural baseline, acute overlay and confidence separately
 - [x] add evidence-health and suppressed-headline states
 - [x] add a public evidence download centre with non-JavaScript access
+
+## Release 0.2.1 — Site completion
+
+Delivery plan and review findings: [`docs/delivery/site-completion/plan.md`](docs/delivery/site-completion/plan.md).
+
+- [x] make the test suite independent of the wall clock
+- [x] validate every collector across two real ONS releases, including a revision
+- [x] disclose overdue source releases on evidence health without changing scoring
+- [x] fix CSP-blocked page styles, contrast, small text and touch targets
+- [x] report a failed evidence-health read as degraded, never as an empty store
+- [x] human pages for every indicator, history, evidence health, and about/corrections
+- [x] derive homepage coverage copy from the API rather than hard-coding it
+- [x] serve `robots.txt` and `sitemap.xml` with absolute, request-origin URLs
+- [ ] server-render the current evidence state for no-JavaScript readers (S2)
+- [x] fix independent backend-review defects R5–R14 (ETag staleness, whitespace-as-zero, atomic snapshot lineage, crashed runs, empty-store caching, period regression, OpenAPI)
+- [ ] decide how to upgrade any populated v0.2 database, given migration 0003's foreign-key behaviour inside D1 transactions (R4)
 
 ## Release 0.3 — Reproducible history and robustness
 

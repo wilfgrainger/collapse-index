@@ -145,3 +145,27 @@
 **Decision:** Observations from the four ONS collectors are written as `verified`, while `releasesObserved` is exposed per collector on the evidence-health endpoint.
 
 **Reason:** `SOURCE_REGISTER.md` requires validation across at least two published releases before a source is production-ready. That is a property of the collector accumulating over time, not of an individual observation whose identity, units, period, hash and parser have all been checked. Separating the two avoids either overstating an observation or understating a validated one. The headline is suppressed by the availability gate regardless, so nothing is publicly overclaimed while maturity accrues.
+
+## D-024 — An expired indicator publishes zero contribution
+
+**Decision:** When an indicator passes its hard expiry, its per-indicator `contribution` is reported as `0`, matching every other unavailable path. Its last `pressure` and `value` stay visible for audit.
+
+**Reason:** `observedPressure`, domain contributions and confidence already excluded expired indicators. Only the per-indicator field still carried `weight × pressure`, and it was published in `/api/v1/current`, snapshot components and `current.csv`. A reader adding up component contributions would have got a number that disagreed with the published structural pressure.
+
+**Consequence:** No headline, structural pressure, range, confidence or gate value changes, so the methodology version stays `1.0.0-alpha.1`. A regression test pins the behaviour.
+
+## D-025 — An older latest period is quarantined, not ingested
+
+**Decision:** If a source's newest point precedes the period already stored for that source, the collector quarantines the payload and writes nothing.
+
+**Reason:** "Latest observation" is the most recently inserted version. If ONS blanked or withdrew its newest month, the older month would otherwise be written as a new version, and the current value would silently move back in time.
+
+**Consequence:** The stored observation remains and ages under the normal freshness rules. The failure is audited as `quarantine` on evidence health.
+
+## D-026 — Overdue releases are disclosed, not scored
+
+**Decision:** Evidence health reports `releaseOverdue` when a source's own announced next-release date has passed without a newer publication being observed.
+
+**Reason:** N3Y6 was due on 2026-11-12 and had not updated by 2026-11-16. The freshness stage still reads `current` because the methodology's grace window has not elapsed. Readers should see the overdue release without the methodology being changed.
+
+**Consequence:** Display only. Freshness stages and confidence continue to follow methodology v1.

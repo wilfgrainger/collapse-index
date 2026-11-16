@@ -26,10 +26,13 @@ function createAssets() {
 }
 
 async function ingestedEnv() {
-  const env = { DB: await createTestDatabase(), EVIDENCE: createTestBucket(), ASSETS: createAssets() };
+  // Pin the read clock to the ingestion day so exports exercise the current
+  // path, not the stale path, regardless of when the suite runs.
+  const now = "2026-08-01T09:00:00.000Z";
+  const env = { DB: await createTestDatabase(), EVIDENCE: createTestBucket(), ASSETS: createAssets(), CLOCK_NOW: now };
   await runIngestion(env, {
     trigger: "export-test",
-    now: "2026-08-01T09:00:00.000Z",
+    now,
     fetchImpl: createFixtureFetch(await fixturesByUrl())
   });
   return env;

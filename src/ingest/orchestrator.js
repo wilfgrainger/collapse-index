@@ -106,6 +106,30 @@ export async function runIngestion(env, options = {}) {
 
   await repo.syncSources(env, sources);
   const runId = await repo.startRun(env, trigger, now);
+  try {
+    return await executeRun(env, runId, { now, sources, fetchImpl });
+  } catch (error) {
+    // Never leave a run in "running": health treats an unfinished run as a
+    // crash, but an explicit failure is the honest audit record.
+    try {
+      await repo.finishRun(env, runId, {
+        finishedAt: new Date().toISOString(),
+        status: "failed",
+        attempted: sources.length,
+        changed: 0,
+        failed: sources.length,
+        written: 0,
+        snapshotId: null,
+        details: { crash: String(error?.message ?? error) }
+      });
+    } catch (finishError) {
+      console.error("could not record failed run", finishError?.message);
+    }
+    throw error;
+  }
+}
+
+async function executeRun(env, runId, { now, sources, fetchImpl }) {
   const results = new Map();
 
   for (const source of ingestionOrder(sources)) {
@@ -251,7 +275,7 @@ export async function runIngestion(env, options = {}) {
     );
     const wrote = await repo.writeSnapshot(env, snapshot, observationIdByIndicator);
     snapshotId = wrote.snapshotId;
-    snapshotCreated = true;
+    snapshotCreated = wrote.created;
   }
 
   const indicatorCount = sources.filter((source) => source.role === SOURCE_ROLE.INDICATOR).length;

@@ -6,33 +6,34 @@
   <meta name="description" content="Methodology for the UK Stability Monitor: fixed weights, published curves, evidence confidence and publication gates.">
   <title>Methodology · UK Stability Monitor</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#08111c">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    .prose { width: min(calc(100% - 2rem), 820px); margin: 0 auto; padding: 5rem 0 8rem; }
-    .prose h1 { font-size: clamp(2.6rem, 8vw, 5rem); }
-    .prose h2 { margin-top: 4rem; font-size: 2rem; }
-    .prose h3 { margin-top: 2rem; font-size: 1.15rem; }
-    .prose p, .prose li { color: #b7c2ce; }
-    .prose table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: .9rem; }
-    .prose th, .prose td { padding: .8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
-    .prose th { background: var(--surface-2); }
-    .prose .num { text-align: right; font-variant-numeric: tabular-nums; }
-    .table-scroll { overflow-x: auto; }
-    .formula { padding: 1.2rem; border: 1px solid var(--line); background: var(--surface); font-family: ui-monospace, monospace; overflow-x: auto; }
-    .warning-box { padding: 1.2rem; border-left: 4px solid #e0a11b; background: rgba(224,161,27,.08); }
-    .done { color: #9adcbb; }
-    .todo { color: #e8c987; }
-  </style>
+  <script src="/methodology.js" type="module"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="/"><span class="brand-mark"><span></span><span></span><span></span></span><span><strong>UK Stability Monitor</strong><small>Open methodology</small></span></a>
-      <nav><a href="/">Dashboard</a><a href="/api/v1/methodology">Methodology API</a><a href="https://github.com/wilfgrainger/collapse-index">Source</a></nav>
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Evidence build · alpha</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#indicators">Indicators</a>
+        <a href="/history">History</a>
+        <a href="/evidence">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology" aria-current="page">Methodology</a>
+        <a href="/about">About</a>
+      </nav>
     </div>
   </header>
 
-  <main class="prose">
+  <main class="prose" id="main">
     <p class="eyebrow">Methodology version 1.0.0-alpha.1</p>
     <h1>An index that shows its workings.</h1>
     <p class="lede">
@@ -42,9 +43,9 @@
     </p>
 
     <div class="warning-box">
-      <strong>No headline is published.</strong> Four of the ten indicators have working collectors,
-      covering 40% of fixed weight. The publication gates require 90%. Until they are met, the site
-      shows what has been measured and what has not, and withholds the single number.
+      <strong>A headline is published only when the gates pass.</strong>
+      <span id="method-coverage">Until they are met, the site shows what has been measured and what has not, and withholds the single number.
+      Current coverage is on the <a href="/evidence">evidence health page</a>.</span>
     </div>
 
     <h2>1. Four outputs, kept apart</h2>
@@ -53,11 +54,12 @@
       required to show them together.
     </p>
     <table>
+      <caption class="visually-hidden">The four published outputs</caption>
       <tbody>
-        <tr><th>Structural pressure</th><td>Fixed-weight sum of measured indicator pressure, 0–100.</td></tr>
-        <tr><th>Acute overlay</th><td>Reviewed, decaying disruption contribution, capped at 8 points.</td></tr>
-        <tr><th>Headline score</th><td><code>min(100, structural + acute)</code> — published only when the gates pass.</td></tr>
-        <tr><th>Confidence</th><td>Evidence health, 0–100. Not a statistical confidence interval.</td></tr>
+        <tr><th scope="row">Structural pressure</th><td>Fixed-weight sum of measured indicator pressure, 0–100.</td></tr>
+        <tr><th scope="row">Acute overlay</th><td>Reviewed, decaying disruption contribution, capped at 8 points.</td></tr>
+        <tr><th scope="row">Headline score</th><td><code>min(100, structural + acute)</code> — published only when the gates pass.</td></tr>
+        <tr><th scope="row">Confidence</th><td>Evidence health, 0–100. Not a statistical confidence interval.</td></tr>
       </tbody>
     </table>
 
@@ -79,7 +81,8 @@
     <p>Weights are fixed within a methodology version. Changing them requires a new version, a regenerated historical series and a sensitivity report.</p>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Domain</th><th>Indicator</th><th class="num">Weight</th><th>Source</th><th>Status</th></tr></thead>
+        <caption class="visually-hidden">Indicator weights, sources and collection status</caption>
+        <thead><tr><th scope="col">Domain</th><th scope="col">Indicator</th><th scope="col" class="num">Weight</th><th scope="col">Source</th><th scope="col">Status</th></tr></thead>
         <tbody>
           <tr><td rowspan="3">Economy and living standards</td><td>Real GDP per capita growth</td><td class="num">12%</td><td>ONS <code>N3Y6/QNA</code></td><td class="done">collected</td></tr>
           <tr><td>CPI inflation pressure</td><td class="num">8%</td><td>ONS <code>D7G7/MM23</code></td><td class="done">collected</td></tr>
@@ -135,7 +138,8 @@
       does not arrive. Beyond a source-specific hard expiry the indicator drops out entirely.
     </p>
     <table>
-      <thead><tr><th>Stage</th><th>Meaning</th><th class="num">Factor</th></tr></thead>
+      <caption class="visually-hidden">Freshness stages and confidence factors</caption>
+      <thead><tr><th scope="col">Stage</th><th scope="col">Meaning</th><th scope="col" class="num">Factor</th></tr></thead>
       <tbody>
         <tr><td>Current</td><td>Within the expected release window</td><td class="num">1.00</td></tr>
         <tr><td>Aging</td><td>One expected release missed</td><td class="num">0.80</td></tr>
@@ -145,12 +149,13 @@
     </table>
 
     <h2>6. Publication gates</h2>
-    <p>A point headline is published only when both gates pass. Today neither does.</p>
+    <p>A point headline is published only when both gates pass. The current column is read live from the evidence store.</p>
     <table>
-      <thead><tr><th>Gate</th><th class="num">Required</th><th class="num">Current</th></tr></thead>
+      <caption class="visually-hidden">Publication gates: required thresholds and current values</caption>
+      <thead><tr><th scope="col">Gate</th><th scope="col" class="num">Required</th><th scope="col" class="num">Current</th></tr></thead>
       <tbody>
-        <tr><td>Fixed-weight availability</td><td class="num">90%</td><td class="num">40%</td></tr>
-        <tr><td>Evidence confidence</td><td class="num">70%</td><td class="num">38%</td></tr>
+        <tr><td>Fixed-weight availability</td><td class="num">90%</td><td class="num" id="gate-availability">see <a href="/evidence">evidence</a></td></tr>
+        <tr><td>Evidence confidence</td><td class="num">70%</td><td class="num" id="gate-confidence">see <a href="/evidence">evidence</a></td></tr>
       </tbody>
     </table>
 
@@ -176,11 +181,15 @@
 
     <h2>9. History</h2>
     <p>
-      There is no historical chart. A reproducible backcast requires acquiring source histories,
-      publishing every transformation and denominator, and marking definition and geography breaks. Until
-      that exists, the history endpoint returns an empty series rather than an illustrative one — a
+      The <a href="/history">history page</a> shows only daily materialisations the system actually
+      calculated, from its first live ingestion onwards. Each point is a recalculation date, not a new
+      statistic: most inputs are monthly, quarterly or annual.
+    </p>
+    <p>
+      There is no backcast before that. A reproducible one requires acquiring source histories,
+      publishing every transformation and denominator, and marking definition and geography breaks. A
       plausible-looking line the model never actually calculated would be the most misleading thing on
-      the site.
+      the site, so none is drawn.
     </p>
 
     <h2>10. Change control</h2>
@@ -205,12 +214,20 @@
     <div class="shell footer-inner">
       <div>
         <strong>UK Stability Monitor</strong>
-        <p>Methodology first. Drama last. Contains public sector information licensed under the Open Government Licence v3.0.</p>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
       </div>
       <div class="footer-links">
-        <a href="/">Dashboard</a>
-        <a href="/api/v1/methodology">Methodology API</a>
-        <a href="/api/v1/openapi.json">OpenAPI</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
+        <a href="/api/v1/openapi.json">API</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
       </div>
     </div>
   </footer>

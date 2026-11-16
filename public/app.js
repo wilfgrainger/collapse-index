@@ -1,61 +1,35 @@
 /** Dashboard rendering. */
 
-const el = (id) => document.getElementById(id);
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "Europe/London"
-});
-
-function formatDate(value) {
-  if (!value) return "—";
-  const normalised = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00Z` : value;
-  const date = new Date(normalised);
-  return Number.isNaN(date.getTime()) ? "—" : dateFormat.format(date);
-}
-
-function text(node, value) {
-  node.textContent = value;
-}
-
-function create(tag, className, textContent) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (textContent !== undefined) node.textContent = textContent;
-  return node;
-}
-
-function pressureColour(pressure) {
-  if (pressure === null || pressure === undefined) return "#6b788a";
-  if (pressure < 25) return "#2f8f5b";
-  if (pressure < 40) return "#6f9c33";
-  if (pressure < 55) return "#c8901a";
-  if (pressure < 70) return "#cc5f26";
-  if (pressure < 85) return "#c03535";
-  return "#7d2230";
-}
-
-function formatValue(indicator) {
-  if (!indicator.available || indicator.value === null) return "No data";
-  const value = Number(indicator.value);
-  if (indicator.display === "percent") return `${value.toFixed(1)}%`;
-  if (indicator.display === "integer") return Math.round(value).toLocaleString("en-GB");
-  return value.toLocaleString("en-GB", { maximumFractionDigits: 2 });
-}
+import {
+  el, text, create, link, pressureColour, formatDate, formatValue, percent,
+  indicatorHref, domainLabel, fetchJson, renderProvenance, emptyRow
+} from "./lib.js";
 
 function renderStatus(data) {
   const suppressed = data.publication.status === "suppressed";
   const pill = el("status-pill");
-  pill.textContent = suppressed ? "Headline withheld" : "Published";
+  pill.textContent = suppressed ? "Headline withheld" : "Published · alpha";
   pill.classList.toggle("suppressed", suppressed);
   pill.classList.toggle("published", !suppressed);
   text(el("status-reason"), data.publication.reason ?? data.publication.level?.summary ?? "");
 
-  const { observedPressure, range, availableWeight } = data.structural;
+  const { observedPressure, range, availableWeight, missingWeight } = data.structural;
+  const { indicatorsAvailable, indicatorsTotal } = data.coverage;
+  const gates = data.publication.gates;
+
+  text(el("hero-title"), suppressed ? "There is no headline score yet." : `Headline: ${data.publication.headlineScore.toFixed(1)} / 100`);
+  text(
+    el("hero-coverage"),
+    suppressed
+      ? `${indicatorsAvailable} of its ${indicatorsTotal} indicators are collected from official statistics, covering ${percent(availableWeight)} of fixed weight. ` +
+        `A headline needs ${percent(gates.minAvailableWeight)} of weight and ${percent(gates.minConfidence)} confidence, so none is published — ` +
+        "showing one would imply a completeness that does not exist."
+      : `${indicatorsAvailable} of ${indicatorsTotal} indicators are collected, covering ${percent(availableWeight)} of fixed weight, and every publication gate has passed.`
+  );
+
   text(el("stat-pressure"), `${observedPressure.toFixed(1)} pts`);
   text(el("stat-confidence"), `${data.confidence.percent.toFixed(0)}%`);
-  text(el("stat-coverage"), `${data.coverage.indicatorsAvailable} of ${data.coverage.indicatorsTotal} · ${(availableWeight * 100).toFixed(0)}% weight`);
+  text(el("stat-coverage"), `${indicatorsAvailable} of ${indicatorsTotal} · ${percent(availableWeight)} weight`);
   text(el("stat-overlay"), `${data.acute.overlay.toFixed(1)} of ${data.acute.cap} max`);
 
   const span = el("gauge-span");
@@ -69,47 +43,73 @@ function renderStatus(data) {
 
   text(el("eq-structural"), observedPressure.toFixed(1));
   text(el("eq-acute"), `+${data.acute.overlay.toFixed(1)}`);
-  text(el("eq-headline"), suppressed ? "—" : data.publication.headlineScore.toFixed(1));
+  const headline = el("eq-headline");
+  text(headline, suppressed ? "—" : data.publication.headlineScore.toFixed(1));
+  headline.setAttribute("aria-label", suppressed ? "withheld" : data.publication.headlineScore.toFixed(1));
   text(
     el("eq-headline-note"),
     suppressed
-      ? `needs ${(data.publication.gates.minAvailableWeight * 100).toFixed(0)}% weight and ${(data.publication.gates.minConfidence * 100).toFixed(0)}% confidence`
+      ? `needs ${percent(gates.minAvailableWeight)} weight and ${percent(gates.minConfidence)} confidence`
       : data.publication.level.label
   );
 
-  const notice = el("provenance-notice");
-  notice.classList.remove("live", "frozen");
-  if (data.provenance?.store === "d1" && data.provenance?.operationalStatus === "current") {
-    notice.classList.add("live");
-    notice.textContent =
-      `Live evidence store. Snapshot for ${formatDate(data.provenance.asOfDate ?? data.provenance.generatedAt)} from ` +
-      `${data.coverage.indicatorsAvailable} collected ONS series.`;
-  } else if (data.provenance?.store === "d1") {
-    notice.classList.add("frozen");
-    notice.textContent =
-      `Stale materialisation. The latest daily snapshot is ${data.provenance.ageDays ?? "an unknown number of"} days old; ` +
-      "check evidence health before relying on it.";
-  } else {
-    notice.classList.add("frozen");
-    notice.textContent =
-      "Frozen capture. Explicit bootstrap mode is serving real ONS values from committed payload fixtures rather than live ingestion.";
+  text(el("gaps-weight"), `These hold ${percent(missingWeight)} of the fixed weight between them.`);
+  text(el("gaps-title"), `The ${indicatorsTotal - indicatorsAvailable} missing indicators`);
+  text(el("guardrail-gates"), `Publication gates are public: ${percent(gates.minAvailableWeight)} of fixed weight and ${percent(gates.minConfidence)} confidence.`);
+
+  renderProvenance(el("provenance-notice"), data.provenance, 200);
+}
+
+function renderDomains(domains) {
+  const list = el("domain-list");
+  if (!list) return;
+  list.replaceChildren(...domains.map((domain) => {
+    const item = create("li", "domain-item");
+    const head = create("div", "domain-head");
+    head.append(create("strong", null, domainLabel(domain.domain)), create("span", null, `${percent(domain.availableWeight)} of ${percent(domain.weight)} measured`));
+    const bar = create("div", "domain-bar");
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", `${domainLabel(domain.domain)}: ${percent(domain.availableWeight)} of ${percent(domain.weight)} weight measured`);
+    const fill = create("span");
+    fill.style.width = domain.weight > 0 ? `${(domain.availableWeight / domain.weight) * 100}%` : "0%";
+    bar.append(fill);
+    item.append(head, bar, create("small", null, `Contributes ${domain.contribution.toFixed(1)} pts of measured pressure`));
+    return item;
+  }));
+}
+
+function renderDrivers(indicators) {
+  const list = el("driver-list");
+  if (!list) return;
+  const drivers = indicators.filter((i) => i.available).sort((a, b) => b.contribution - a.contribution).slice(0, 3);
+  if (drivers.length === 0) {
+    list.replaceChildren(create("li", null, "No measured indicator is contributing pressure."));
+    return;
   }
+  list.replaceChildren(...drivers.map((indicator) => {
+    const item = create("li");
+    item.append(link(indicatorHref(indicator.id), indicator.title));
+    item.append(create("span", null, `${indicator.contribution.toFixed(1)} pts · ${formatValue(indicator)} (${indicator.period.label})`));
+    return item;
+  }));
 }
 
 function renderIndicator(indicator, index) {
   const card = create("article", `indicator-card${indicator.available ? "" : " unavailable"}`);
   const top = create("div", "indicator-top");
   top.append(create("span", "indicator-number", String(index + 1).padStart(2, "0")));
-  top.append(create("span", "indicator-weight", `${(indicator.weight * 100).toFixed(0)}% weight`));
-  card.append(top, create("h3", null, indicator.title));
+  top.append(create("span", "indicator-weight", `${percent(indicator.weight)} weight`));
+  const heading = create("h3");
+  heading.append(link(indicatorHref(indicator.id), indicator.title, "card-link"));
+  card.append(top, heading, create("p", "indicator-domain", domainLabel(indicator.domain)));
 
   if (indicator.available) {
-    const row = create("div", "indicator-value-row");
-    row.append(create("strong", "indicator-value", formatValue(indicator)));
+    const valueRow = create("div", "indicator-value-row");
+    valueRow.append(create("strong", "indicator-value", formatValue(indicator)));
     const score = create("span", "indicator-score");
     score.append(create("small", null, "pressure"), create("strong", null, `${indicator.pressure.toFixed(0)}/100`));
-    row.append(score);
-    card.append(row);
+    valueRow.append(score);
+    card.append(valueRow);
 
     const bar = create("div", "pressure-bar");
     bar.style.setProperty("--indicator-score", `${indicator.pressure}%`);
@@ -122,7 +122,9 @@ function renderIndicator(indicator, index) {
       ["Period", indicator.period.label],
       ["Published", formatDate(indicator.freshness.publishedDate ?? indicator.freshness.publishedAt)],
       ["Coverage", indicator.geography.label],
-      ["Freshness", indicator.freshness.stage]
+      ["Freshness", indicator.freshness.stage],
+      ["State", indicator.state ?? "—"],
+      ["Contribution", `${indicator.contribution.toFixed(2)} pts`]
     ];
     for (const [term, value] of pairs) {
       const wrap = create("div");
@@ -132,10 +134,10 @@ function renderIndicator(indicator, index) {
     card.append(meta);
 
     const foot = create("div", "indicator-foot");
-    const link = create("a", null, `${indicator.source.cdid} · ${indicator.source.provider}`);
-    link.href = indicator.source.url;
-    link.rel = "noopener";
-    foot.append(link, create("code", "hash", indicator.source.evidenceSha256.slice(0, 12)));
+    foot.append(link(indicator.source.url, `${indicator.source.cdid} · ${indicator.source.provider}`));
+    const hash = create("code", "hash", indicator.source.evidenceSha256.slice(0, 12));
+    hash.title = `SHA-256 ${indicator.source.evidenceSha256}`;
+    foot.append(hash);
     card.append(foot);
   } else {
     card.append(create("p", "indicator-missing", indicator.reason ?? "No evidence available."));
@@ -149,36 +151,50 @@ function renderIndicator(indicator, index) {
 }
 
 function renderIndicators(indicators) {
-  el("indicator-grid").replaceChildren(...indicators.map(renderIndicator));
+  const grid = el("indicator-grid");
+  grid.replaceChildren(...indicators.map(renderIndicator));
+  grid.removeAttribute("aria-busy");
 }
 
-function renderCollectors(health) {
+function renderCollectors(result) {
   const body = el("collector-rows");
-  const collectors = health.collectors ?? [];
+  const collectors = result.body?.collectors ?? [];
+  const provenance = result.body?.provenance;
+  const degraded = !result.body || provenance?.operationalStatus === "degraded" || provenance?.kind === "unavailable";
+
+  if (degraded) {
+    body.replaceChildren(emptyRow(6, `Evidence health is degraded or unavailable (HTTP ${result.status || "network error"}). This is a failure, not an empty store.`));
+    return;
+  }
   if (collectors.length === 0) {
-    const row = create("tr");
-    const cell = create("td", null, "No collection runs recorded. Bind D1 and run the ingestion Worker.");
-    cell.colSpan = 6;
-    row.append(cell);
-    body.replaceChildren(row);
+    const message = provenance?.store === "d1"
+      ? "The evidence store is bound but no collection run has been recorded."
+      : "Bootstrap capture: collector runs are only recorded by the live ingestion Worker.";
+    body.replaceChildren(emptyRow(6, message));
     return;
   }
 
   body.replaceChildren(...collectors.map((collector) => {
-    const row = create("tr");
+    const tr = create("tr");
     const series = create("th");
     series.scope = "row";
     series.append(create("strong", null, `${collector.cdid}/${collector.datasetId}`));
     series.append(create("small", null, collector.title));
-    row.append(series);
-    row.append(create("td", null, collector.role === "denominator" ? "denominator" : (collector.indicatorId ?? "—")));
-    row.append(create("td", null, collector.geography));
+    tr.append(series);
+    const role = create("td");
+    if (collector.role === "denominator") role.textContent = "denominator";
+    else if (collector.indicatorId) role.append(link(indicatorHref(collector.indicatorId), collector.indicatorId));
+    else role.textContent = "—";
+    tr.append(role);
+    tr.append(create("td", null, collector.geography));
     const outcome = create("td");
     outcome.append(create("span", `outcome ${collector.lastOutcome ?? "none"}`, collector.lastOutcome ?? "not run"));
-    row.append(outcome);
-    row.append(create("td", null, formatDate(collector.lastPublishedAt)));
-    row.append(create("td", null, formatDate(collector.expectedNextRelease)));
-    return row;
+    tr.append(outcome);
+    tr.append(create("td", null, formatDate(collector.lastPublishedAt)));
+    const next = create("td", null, formatDate(collector.expectedNextRelease));
+    if (collector.releaseOverdue) next.append(create("span", "outcome overdue", "overdue"));
+    tr.append(next);
+    return tr;
   }));
 }
 
@@ -186,36 +202,31 @@ function renderGaps(indicators) {
   const missing = indicators.filter((indicator) => !indicator.available);
   el("gap-list").replaceChildren(...missing.map((indicator) => {
     const item = create("li");
-    item.append(create("strong", null, `${indicator.title} · ${(indicator.weight * 100).toFixed(0)}%`));
+    item.append(link(indicatorHref(indicator.id), `${indicator.title} · ${percent(indicator.weight)}`));
     item.append(create("span", null, indicator.reason ?? "No collector implemented."));
     return item;
   }));
 }
 
-async function fetchJson(url) {
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
-  return response.json();
-}
-
 async function start() {
-  try {
-    const current = await fetchJson("/api/v1/current");
-    renderStatus(current);
-    renderIndicators(current.indicators);
-    renderGaps(current.indicators);
-    try {
-      renderCollectors(await fetchJson("/api/v1/evidence-health"));
-    } catch (error) {
-      console.error(error);
-      renderCollectors({ collectors: [] });
-    }
-  } catch (error) {
-    console.error(error);
+  const current = await fetchJson("/api/v1/current");
+  if (!current.ok || !current.body?.publication) {
     text(el("status-pill"), "Unavailable");
-    text(el("status-reason"), "The evidence store is unavailable or degraded. Check /api/v1/health.");
+    el("status-pill").classList.add("degraded");
+    text(el("status-reason"), "The evidence store is unavailable or degraded. No fixture data has been substituted.");
+    renderProvenance(el("provenance-notice"), current.body?.provenance ?? null, current.status);
     el("indicator-grid").replaceChildren(create("p", "loading", "Evidence could not be loaded."));
+    el("indicator-grid").removeAttribute("aria-busy");
+    renderCollectors(await fetchJson("/api/v1/evidence-health"));
+    return;
   }
+  const data = current.body;
+  renderStatus(data);
+  renderDomains(data.coverage.byDomain ?? []);
+  renderDrivers(data.indicators);
+  renderIndicators(data.indicators);
+  renderGaps(data.indicators);
+  renderCollectors(await fetchJson("/api/v1/evidence-health"));
 }
 
 start();

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Collector health, publication gates, domain coverage, release calendar and recent ingestion runs for the UK Stability Monitor.">
+  <meta name="theme-color" content="#08111c">
+  <title>Evidence health · UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/evidence.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Evidence build · alpha</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#indicators">Indicators</a>
+        <a href="/history">History</a>
+        <a href="/evidence" aria-current="page">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page" id="main">
+    <p class="eyebrow">Evidence health</p>
+    <h1>Is the evidence fit to publish?</h1>
+    <p class="lede">
+      The gates, collectors and runs behind the current state. A failure here is shown as a failure;
+      the site never substitutes bundled data for a broken evidence store.
+    </p>
+    <div class="notice" id="provenance-notice" role="status">Loading evidence health…</div>
+
+    <h2>Publication gates</h2>
+    <p id="gate-reason"></p>
+    <div class="gate-grid" id="gate-grid"></div>
+
+    <h2>Coverage by domain</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Fixed weight measured in each domain</caption>
+        <thead><tr><th scope="col">Domain</th><th scope="col" class="num">Fixed weight</th><th scope="col" class="num">Measured</th><th scope="col" class="num">Contribution</th></tr></thead>
+        <tbody id="domain-rows"><tr><td colspan="4">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <h2>Collectors and release calendar</h2>
+    <p>
+      A collector is production-ready only after it has validated at least two published releases.
+      “Overdue” means the source's own announced release date has passed without a new release being observed.
+    </p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Collector health and next expected releases</caption>
+        <thead><tr>
+          <th scope="col">Series</th><th scope="col">Role</th><th scope="col">Quality</th><th scope="col" class="num">Releases</th>
+          <th scope="col">Last outcome</th><th scope="col">Last published</th><th scope="col">Next expected</th><th scope="col">Last attempt</th>
+        </tr></thead>
+        <tbody id="collector-rows"><tr><td colspan="8">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <h2>Indicator freshness</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Freshness and confidence factors for every indicator</caption>
+        <thead><tr><th scope="col">Indicator</th><th scope="col">Freshness</th><th scope="col">Geography</th><th scope="col" class="num">Quality</th><th scope="col" class="num">Freshness factor</th><th scope="col" class="num">Coverage factor</th></tr></thead>
+        <tbody id="freshness-rows"><tr><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <h2>Recent ingestion runs</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">The ten most recent ingestion runs</caption>
+        <thead><tr><th scope="col">Run</th><th scope="col">Started</th><th scope="col">Status</th><th scope="col" class="num">Attempted</th><th scope="col" class="num">Changed</th><th scope="col" class="num">Failed</th><th scope="col" class="num">Written</th></tr></thead>
+        <tbody id="run-rows"><tr><td colspan="7">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <noscript><p>This page renders with JavaScript. The same data is at <a href="/api/v1/evidence-health">/api/v1/evidence-health</a>.</p></noscript>
+  </main>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
+        <a href="/api/v1/openapi.json">API</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

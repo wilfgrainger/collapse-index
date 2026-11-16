@@ -337,7 +337,11 @@ async function evidenceHealthDocument(env) {
 
   if (repo.hasDatabase(env)) {
     try {
-      base.collectors = await repo.collectorHealth(env);
+      const now = runtimeNow(env);
+      base.collectors = (await repo.collectorHealth(env)).map((collector) => ({
+        ...collector,
+        releaseOverdue: releaseOverdue(collector, now)
+      }));
       base.recentRuns = await repo.recentRuns(env, 10);
     } catch (error) {
       console.error("evidence health read failed", error?.message);
@@ -360,38 +364,101 @@ function exportLinks(origin) {
 }
 
 function openApiDocument(origin) {
-  const path = (summary, options = {}) => ({
-    get: {
-      summary,
-      ...(options.deprecated ? { deprecated: true } : {}),
-      responses: { 200: { description: summary }, 503: { description: "Evidence store unavailable or stale" } }
-    }
+  const limit = (name, max, fallback) => ({
+    name, in: "query", required: false,
+    schema: { type: "integer", minimum: 1, maximum: max, default: fallback }
   });
+  const path = (summary, options = {}) => {
+    const responses = { 200: { description: summary, content: { [options.contentType ?? "application/json"]: {} } } };
+    if (options.etag) responses[304] = { description: "Not modified (If-None-Match matched)" };
+    if (options.notFound) responses[404] = { description: "Unknown resource" };
+    if (options.storeBacked !== false) responses[503] = { description: "Evidence store unavailable, degraded or stale" };
+    return {
+      get: {
+        summary,
+        ...(options.deprecated ? { deprecated: true } : {}),
+        ...(options.parameters ? { parameters: options.parameters } : {}),
+        responses
+      }
+    };
+  };
+  const csvType = "text/csv";
   return {
     openapi: "3.1.0",
     info: {
       title: "UK Stability Monitor API",
       version: METHODOLOGY_VERSION,
-      description: "Read-only access to observable systemic pressure. It is not a prediction of state failure."
+      description: "Read-only access to observable systemic pressure. It is not a prediction of state failure. " +
+        "Every route also accepts HEAD and OPTIONS; any other method returns 405 with an Allow header."
     },
     servers: [{ url: origin }],
     paths: {
-      [`${API_PREFIX}/current`]: path("Current snapshot: pressure, confidence, gates and indicators"),
-      [`${API_PREFIX}/index`]: path("Compatibility alias for /api/v1/current", { deprecated: true }),
-      [`${API_PREFIX}/history`]: path("Materialised snapshot history"),
-      [`${API_PREFIX}/indicators/{id}`]: path("One indicator with its definition and observation history"),
-      [`${API_PREFIX}/evidence-health`]: path("Collector health, freshness and publication gates"),
-      [`${API_PREFIX}/methodology`]: path("Weights, curves, gates and levels"),
-      [`${API_PREFIX}/sources`]: path("Source register with exact series identifiers"),
+      [`${API_PREFIX}/current`]: path("Current snapshot: pressure, confidence, gates and indicators", { etag: true }),
+      [`${API_PREFIX}/index`]: path("Compatibility alias for /api/v1/current", { deprecated: true, etag: true }),
+      [`${API_PREFIX}/history`]: path("Materialised snapshot history", { parameters: [limit("limit", 2000, 365)] }),
+      [`${API_PREFIX}/indicators/{id}`]: path("One indicator with its definition and observation history", {
+        notFound: true,
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", pattern: "^[a-z0-9_]+$" } }]
+      }),
+      [`${API_PREFIX}/evidence-health`]: path("Collector health, freshness, release calendar and publication gates"),
+      [`${API_PREFIX}/methodology`]: path("Weights, curves, gates and levels", { storeBacked: false }),
+      [`${API_PREFIX}/sources`]: path("Source register with exact series identifiers", { storeBacked: false }),
       [`${API_PREFIX}/health`]: path("Service health and binding state"),
+      [`${API_PREFIX}/openapi.json`]: path("This document", { storeBacked: false }),
       [`${API_PREFIX}/exports/manifest.json`]: path("Machine-readable export catalogue and scope notes"),
-      [`${API_PREFIX}/exports/current.csv`]: path("Current ten-indicator snapshot as CSV"),
-      [`${API_PREFIX}/exports/observations.json`]: path("Verified and revised observation history as JSON"),
-      [`${API_PREFIX}/exports/observations.csv`]: path("Verified and revised observation history as CSV"),
-      [`${API_PREFIX}/exports/snapshots.json`]: path("Daily materialised snapshot history as JSON"),
-      [`${API_PREFIX}/exports/snapshots.csv`]: path("Daily materialised snapshot history as CSV")
+      [`${API_PREFIX}/exports/current.csv`]: path("Current ten-indicator snapshot as CSV", { contentType: csvType }),
+      [`${API_PREFIX}/exports/observations.json`]: path("Verified and revised observation history as JSON", { parameters: [limit("limit_per_indicator", 500, 500)] }),
+      [`${API_PREFIX}/exports/observations.csv`]: path("Verified and revised observation history as CSV", { contentType: csvType, parameters: [limit("limit_per_indicator", 500, 500)] }),
+      [`${API_PREFIX}/exports/snapshots.json`]: path("Daily materialised snapshot history as JSON", { parameters: [limit("limit", 2000, 2000)] }),
+      [`${API_PREFIX}/exports/snapshots.csv`]: path("Daily materialised snapshot history as CSV", { contentType: csvType, parameters: [limit("limit", 2000, 2000)] })
     }
   };
+}
+
+/** Public pages listed in the sitemap; robots.txt and sitemap.xml use the request origin. */
+export const SITE_PAGES = Object.freeze([
+  "/", "/methodology", "/evidence", "/history", "/about",
+  ...INDICATORS.map((indicator) => `/indicator?id=${indicator.id}`)
+]);
+
+function escapeXml(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function siteFile(pathname, origin) {
+  if (pathname === "/robots.txt") {
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`, {
+      headers: responseHeaders("text/plain; charset=utf-8", CACHE.methodology)
+    });
+  }
+  if (pathname === "/sitemap.xml") {
+    const urls = SITE_PAGES.map((page) => `  <url><loc>${escapeXml(`${origin}${page}`)}</loc></url>`).join("\n");
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, {
+      headers: responseHeaders("application/xml; charset=utf-8", CACHE.methodology)
+    });
+  }
+  return null;
+}
+
+const STUCK_RUN_MINUTES = 30;
+
+function runIsStuck(run, now) {
+  const started = Date.parse(run.started_at);
+  const current = Date.parse(now);
+  return Number.isFinite(started) && Number.isFinite(current) && current - started > STUCK_RUN_MINUTES * 60_000;
+}
+
+/**
+ * Display-only disclosure: the source's own announced release date has passed
+ * without a newer publication being observed. Scoring is unaffected; freshness
+ * stages remain governed by the methodology.
+ */
+export function releaseOverdue(collector, now) {
+  const expected = collector.expectedNextRelease;
+  if (!expected) return false;
+  const today = dateInTimeZone(now);
+  const lastPublished = collector.lastPublishedAt ? dateInTimeZone(collector.lastPublishedAt) : null;
+  return expected < today && (lastPublished === null || lastPublished < expected);
 }
 
 async function healthDocument(env) {
@@ -438,6 +505,10 @@ async function healthDocument(env) {
         result.ok = false;
         result.status = "degraded";
         result.reason = "latest ingestion run failed";
+      } else if (result.latestRun?.status === "running" && runIsStuck(result.latestRun, result.timestamp)) {
+        result.ok = false;
+        result.status = "degraded";
+        result.reason = "latest ingestion run never finished";
       }
     } catch (error) {
       console.error("health read failed", error?.message);
@@ -526,6 +597,35 @@ function snapshotExportRows(points) {
   }));
 }
 
+/**
+ * The body carries time-dependent operational state (operationalStatus,
+ * ageDays), so the validator must change when that state changes. Otherwise a
+ * client holding a "current" body would revalidate to 304 after it went stale.
+ */
+function currentEtag(snapshot, provenance) {
+  const state = provenance.stateFingerprint ?? provenance.evidenceFingerprint ?? snapshot.generatedAt;
+  const operational = `${provenance.operationalStatus ?? "unknown"}:${provenance.ageDays ?? "na"}`;
+  return `"${hashText(`${state}|${METHODOLOGY_VERSION}|${operational}`)}"`;
+}
+
+/** RFC 9110 weak comparison: ignores W/ prefixes and accepts lists and "*". */
+export function etagMatches(header, etag) {
+  if (!header) return false;
+  const bare = etag.replace(/^W\//, "");
+  return header.split(",").map((tag) => tag.trim()).some((tag) => tag === "*" || tag.replace(/^W\//, "") === bare);
+}
+
+/** Small deterministic non-cryptographic digest (FNV-1a, 2×32 bits) for validators. */
+function hashText(input) {
+  let h1 = 0x811c9dc5, h2 = 0x01000193 ^ input.length;
+  for (let i = 0; i < input.length; i++) {
+    const c = input.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
+  }
+  return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+}
+
 async function handleCurrent(request, env, compatibility = false) {
   const { snapshot, provenance } = await resolveCurrent(env);
   const extraHeaders = currentExtraHeaders(provenance, compatibility);
@@ -536,8 +636,8 @@ async function handleCurrent(request, env, compatibility = false) {
       extraHeaders
     });
   }
-  const etag = `"${provenance.stateFingerprint ?? provenance.evidenceFingerprint ?? snapshot.generatedAt}-${METHODOLOGY_VERSION}"`;
-  if (request.headers.get("if-none-match") === etag) {
+  const etag = currentEtag(snapshot, provenance);
+  if (etagMatches(request.headers.get("if-none-match"), etag)) {
     const headers = responseHeaders("application/json; charset=utf-8", CACHE.current, { ETag: etag, ...extraHeaders });
     return new Response(null, { status: 304, headers });
   }
@@ -550,6 +650,7 @@ async function handleExports(request, env, url) {
 
   if (pathname === `${API_PREFIX}/exports/manifest.json`) {
     const { snapshot, provenance } = await resolveCurrent(env);
+    const manifestDegraded = provenance.operationalStatus === "degraded" || provenance.kind === "unavailable";
     return json({
       product: "UK Stability Monitor",
       methodologyVersion: METHODOLOGY_VERSION,
@@ -579,7 +680,7 @@ async function handleExports(request, env, url) {
         code: "MIT",
         sourceData: "Open Government Licence v3.0; source attribution is retained per observation."
       }
-    }, { cacheControl: CACHE.health });
+    }, manifestDegraded ? { status: 503, cacheControl: CACHE.none } : { cacheControl: CACHE.health });
   }
 
   if (pathname === `${API_PREFIX}/exports/current.csv`) {
@@ -659,7 +760,8 @@ async function handleApi(request, env) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return json({ error: "method_not_allowed", message: "This API is read-only." }, {
       status: 405,
-      cacheControl: CACHE.none
+      cacheControl: CACHE.none,
+      extraHeaders: { Allow: "GET, HEAD, OPTIONS" }
     });
   }
 
@@ -677,6 +779,11 @@ async function handleApi(request, env) {
         if (points.length > 0) {
           return json({ seriesKind: "materialised-snapshots", points }, { cacheControl: CACHE.history });
         }
+        return json({
+          seriesKind: "unavailable",
+          points: [],
+          provenance: { store: "d1", kind: "degraded", operationalStatus: "degraded", reason: "database is bound but contains no materialised snapshot" }
+        }, { status: 503, cacheControl: CACHE.none });
       } catch (error) {
         console.error("history read failed", error?.message);
         return json({ error: "evidence_store_unavailable" }, { status: 503, cacheControl: CACHE.none });
@@ -740,6 +847,10 @@ export default {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
       return withoutBodyForHead(request, await handleApi(request, env));
+    }
+    if (request.method === "GET" || request.method === "HEAD") {
+      const file = siteFile(url.pathname, url.origin);
+      if (file) return withoutBodyForHead(request, file);
     }
     if (!env.ASSETS) return json({ error: "assets_binding_missing" }, { status: 503, cacheControl: CACHE.none });
     return withSecurityHeaders(await env.ASSETS.fetch(request));
