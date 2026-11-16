@@ -265,3 +265,13 @@ Full review of the site and backend. Findings, roadmap and delivery plan: `docs/
 - S2: server-render the evidence state for readers without JavaScript.
 - Live ONS collection on real Cloudflare resources is still to be confirmed after first deployment.
 - Next collectors, in order: NHS RTT (15%, needed for the 90% gate), FSA food insecurity, HBAI, rental affordability, trust, environment.
+
+## 2026-11-16 — Food insecurity exact-source review (issue #5)
+
+- Identified the exact FSA Food and You 2 Wave 11 resources, with licence, fieldwork period, sizes and SHA-256 hashes.
+- Recomputed the weighted low-plus-very-low food-security share from the respondent-level CSV: E, W and NI 21.2039031324%. FSA's published table T231 gives 21.2039031324445%. England, Wales and Northern Ireland match to the same precision.
+- Found that the v1 unit wording ("% of households") does not match FSA's individual-level measure.
+- Found that the provisional breakpoints would score the current level at about 87/100.
+- Measured a CSV parse at 50–70 ms CPU, which exceeds the Workers Free per-invocation limit.
+- NHS RTT: `www.england.nhs.uk` returns an empty 202 challenge to automated clients. That is a source-access blocker, and it was not circumvented.
+- No collector, no scoring change and no committed fixture yet. Owner decisions D1–D4 are listed in `docs/delivery/food-insecurity/source-review.md`.

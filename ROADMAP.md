@@ -47,8 +47,9 @@
 
 ### Remaining core indicators
 
-- [ ] implement FSA Food and You 2 food-security collector — tracked in issue #5; exact CSV resource and definition review are the first gate
-- [ ] implement NHS England RTT collector with England-only disclosure
+- [x] FSA Food and You 2 exact-source review: Wave 11 microdata reproduces FSA's published table to ten significant figures ([`source-review.md`](docs/delivery/food-insecurity/source-review.md))
+- [ ] implement FSA Food and You 2 food-security collector — issue #5; blocked on owner decisions D1–D4 in the source review (Workers plan, unit wording, breakpoints, wave registration)
+- [ ] implement NHS England RTT collector with England-only disclosure — source-access blocker: `www.england.nhs.uk` challenges automated clients (source review §7)
 - [ ] implement DWP HBAI child-poverty collector
 - [ ] implement ONS private-rental-affordability collector
 - [ ] resolve trust-series continuity and implement the approved source
