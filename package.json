@@ -15,7 +15,8 @@
     "check": "npm run lint:syntax && npm test && npm run check:bundle",
     "check:bundle": "wrangler deploy --config wrangler.web.jsonc --dry-run --outdir .wrangler/dry/web && wrangler deploy --config wrangler.ingest.jsonc --dry-run --outdir .wrangler/dry/ingest",
     "lint:syntax": "node scripts/check-syntax.mjs",
-    "generate:bootstrap": "node scripts/generate-bootstrap.mjs"
+    "generate:bootstrap": "node scripts/generate-bootstrap.mjs",
+    "build:pages": "node scripts/build-pages.mjs dist/pages --base=/collapse-index --origin=https://wilfgrainger.github.io"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

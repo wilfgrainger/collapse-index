@@ -2,6 +2,17 @@
 
 export const el = (id) => document.getElementById(id);
 
+/**
+ * Site base path. Empty on the Worker (site at "/"); the static GitHub Pages
+ * build sets <html data-base="/collapse-index">. Every root-relative URL the
+ * scripts build goes through withBase().
+ */
+export const BASE = (document.documentElement.dataset.base ?? "").replace(/\/$/, "");
+
+export function withBase(path) {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//") ? `${BASE}${path}` : path;
+}
+
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
@@ -62,7 +73,7 @@ export function create(tag, className, textContent) {
 
 export function link(href, label, className) {
   const anchor = create("a", className, label);
-  anchor.href = href;
+  anchor.href = withBase(href);
   if (/^https?:/.test(href)) anchor.rel = "noopener";
   return anchor;
 }
@@ -91,7 +102,7 @@ export function formatValue(indicator) {
 }
 
 export function indicatorHref(id) {
-  return `/indicator?id=${encodeURIComponent(id)}`;
+  return `/indicator?id=${encodeURIComponent(id)}`; // link() applies the base path
 }
 
 /** A row of <th scope="row"> + <td> cells, all as text. */
@@ -127,7 +138,7 @@ export function emptyRow(colSpan, message) {
 export async function fetchJson(url) {
   let response;
   try {
-    response = await fetch(url, { headers: { Accept: "application/json" } });
+    response = await fetch(withBase(url), { headers: { Accept: "application/json" } });
   } catch (error) {
     return { ok: false, status: 0, body: null, error };
   }

@@ -78,6 +78,16 @@ Static pages with no framework and no build step. Each one renders from the read
 
 `robots.txt` and `sitemap.xml` are served by the Worker with absolute request-origin URLs. The shared header and footer are kept identical by `node scripts/sync-chrome.mjs`; the test suite fails if a page drifts. Pages contain no inline styles or scripts, so the site's strict CSP holds.
 
+### Static preview on GitHub Pages
+
+`.github/workflows/pages.yml` publishes a static preview on every push to `main`, at `https://wilfgrainger.github.io/collapse-index/`.
+
+Pages cannot run the public Worker. `scripts/build-pages.mjs` therefore runs the real Worker once in explicit bootstrap mode and freezes each read-only API response into a file. It also rewrites root-relative links for the `/collapse-index` base path.
+
+The preview shows the committed ONS fixture capture, labelled **frozen capture** on every page. Its history and canonical observation and snapshot exports are empty or unavailable, exactly as in bootstrap mode. It is not live data and not the production deployment.
+
+Build it locally with `npm run build:pages`; the output goes to `dist/pages/`.
+
 ## Downloadable evidence
 
 The public API provides bounded exports with stable schemas and deterministic row ordering:
