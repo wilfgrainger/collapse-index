@@ -61,6 +61,17 @@ export function buildObservation({
     throw new CollectorError(FAILURE_CLASS.VALIDATION, `no usable observation for ${source.cdid}`, { sourceId: source.id });
   }
 
+  // A payload whose newest point is older than what is already stored (for
+  // example after ONS blanks its latest month) must not move the current value
+  // back in time. Quarantine it; the stored observation remains and ages.
+  if (previousObservation?.periodEnd && latest.periodEnd < previousObservation.periodEnd) {
+    throw new CollectorError(
+      FAILURE_CLASS.QUARANTINE,
+      `${source.cdid} latest period ${latest.periodEnd} precedes stored period ${previousObservation.periodEnd}`,
+      { sourceId: source.id }
+    );
+  }
+
   const observation = {
     indicatorId: source.indicatorId,
     sourceId: source.id,

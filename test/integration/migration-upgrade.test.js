@@ -93,3 +93,23 @@ test("migration 0003 upgrades a populated v0.2 database without losing lineage",
   assert.equal(run.snapshot_id, 3);
   assert.deepEqual(db._raw.prepare("PRAGMA foreign_key_check").all(), []);
 });
+
+test("every migration applies from empty inside a transaction with foreign keys enforced, as D1 runs them", async () => {
+  // D1 executes each migration file in a transaction, where PRAGMA foreign_keys
+  // has no effect. A fresh installation must succeed under those conditions.
+  // Known limitation (docs/delivery/site-completion/plan.md, R4): 0003 cannot
+  // upgrade a *populated* v0.2 database inside a transaction, because its
+  // PRAGMA foreign_keys = OFF is ignored there. No populated v0.2 database exists.
+  const { DatabaseSync } = await import("node:sqlite");
+  const { readdir, readFile } = await import("node:fs/promises");
+  const dir = new URL("../../migrations/", import.meta.url);
+  const db = new DatabaseSync(":memory:");
+  db.exec("PRAGMA foreign_keys = ON");
+  for (const file of (await readdir(dir)).filter((name) => name.endsWith(".sql")).sort()) {
+    db.exec(`BEGIN;\n${await readFile(new URL(file, dir), "utf8")}\nCOMMIT;`);
+  }
+  assert.deepEqual(db.prepare("PRAGMA foreign_key_check").all(), []);
+  assert.equal(db.prepare("PRAGMA foreign_keys").get().foreign_keys, 1);
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((row) => row.name);
+  for (const table of ["observations", "snapshots", "snapshot_components", "ingestion_runs"]) assert.ok(tables.includes(table), table);
+});

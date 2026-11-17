@@ -130,7 +130,13 @@ export function parseNextRelease(text) {
   const monthIndex = MONTH_INDEX[monthKey];
   if (monthIndex === undefined) return null;
 
-  return iso(Number(match[3]), monthIndex, Number(match[1]));
+  const year = Number(match[3]);
+  const day = Number(match[1]);
+  // Reject impossible dates such as "31 February" rather than letting
+  // Date.parse roll them into the following month.
+  const probe = new Date(Date.UTC(year, monthIndex, day));
+  if (probe.getUTCFullYear() !== year || probe.getUTCMonth() !== monthIndex || probe.getUTCDate() !== day) return null;
+  return iso(year, monthIndex, day);
 }
 
 /** Whole days between two ISO dates; negative when `to` precedes `from`. */

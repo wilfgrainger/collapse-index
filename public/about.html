@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="What the UK Stability Monitor is and is not, how to read it, and its corrections and revision policy.">
+  <meta name="theme-color" content="#08111c">
+  <title>About and corrections · UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Evidence build · alpha</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#indicators">Indicators</a>
+        <a href="/history">History</a>
+        <a href="/evidence">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about" aria-current="page">About</a>
+      </nav>
+    </div>
+  </header>
+  <main class="prose" id="main">
+    <p class="eyebrow">About</p>
+    <h1>Pressure, not prophecy.</h1>
+    <p class="lede">
+      The UK Stability Monitor is an open, reproducible measure of observable pressure on the UK's
+      economic, household, institutional, public-service and environmental systems, built only from
+      published evidence whose exact bytes are hashed and kept.
+    </p>
+
+    <h2 id="what-it-means">What it means, and what it does not</h2>
+    <div class="table-scroll">
+      <table>
+        <caption class="visually-hidden">What the monitor claims and does not claim</caption>
+        <thead><tr><th scope="col">It is</th><th scope="col">It is not</th></tr></thead>
+        <tbody>
+          <tr><td>A fixed-weight summary of measured strain</td><td>A forecast that the country will collapse</td></tr>
+          <tr><td>Recalculated daily from the latest releases</td><td>A daily statistic: most inputs are monthly, quarterly or annual</td></tr>
+          <tr><td>Explicit about missing evidence and its weight</td><td>A complete picture while indicators are missing</td></tr>
+          <tr><td>Traceable to official source series and payload hashes</td><td>An official statistic or a government product</td></tr>
+          <tr><td>Separate about confidence and pressure</td><td>A political approval rating or sentiment score</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="how-to-read">How to read the dashboard</h2>
+    <ul>
+      <li><strong>Measured pressure</strong> is the fixed-weight sum of collected indicators on a 0–100 scale. With indicators missing it is a lower bound, not a score.</li>
+      <li><strong>The range</strong> is where a complete score could fall if every missing indicator were at zero or at maximum pressure.</li>
+      <li><strong>Confidence</strong> describes evidence health — quality, freshness and geographic coverage. It is not a statistical confidence interval.</li>
+      <li><strong>The headline</strong> appears only when at least 90% of fixed weight is available and confidence is at least 70%. Until then it is withheld on purpose.</li>
+      <li><strong>Each indicator page</strong> shows the source series, reference period, publication date, evidence hash, scoring curve and every stored version.</li>
+    </ul>
+
+    <h2 id="faq">Questions</h2>
+    <dl class="faq">
+      <dt>Why is there no headline number?</dt>
+      <dd>Because too little of the fixed weight is measured. Rescaling the measured indicators to look complete would turn a gap in the evidence into a claim about the country. The <a href="/evidence">evidence page</a> shows exactly how far each gate is from passing.</dd>
+      <dt>Why does the number move on a day when nothing was published?</dt>
+      <dd>It should not move without a new or revised observation, an approved event or a methodology change. Freshness can still age with time, which changes confidence, not pressure. Each day's materialisation is recorded on the <a href="/history">history page</a>.</dd>
+      <dt>Why is there no long historical chart?</dt>
+      <dd>History starts at the first live ingestion. A backcast needs source histories, published transformations and marked structural breaks; until that work is done no line is drawn.</dd>
+      <dt>Who decides the weights and curves?</dt>
+      <dd>They are fixed in a versioned, public <a href="/methodology">methodology</a>. Any change requires a new version, updated tests and an entry in the decision log. Independent statistical review is required before an editorial launch.</dd>
+      <dt>Can news events move the score?</dt>
+      <dd>Only through a separate, capped and decaying overlay, and only after named review with corroboration. That workflow is not built yet, so no event currently affects anything.</dd>
+      <dt>Can I reuse the data?</dt>
+      <dd>Yes. Code is MIT-licensed; source data is Crown copyright under the Open Government Licence v3.0 and must keep its attribution. Start with the <a href="/api/v1/exports/manifest.json">export manifest</a>.</dd>
+    </dl>
+
+    <h2 id="corrections">Corrections and revision policy</h2>
+    <h3>Source revisions</h3>
+    <p>
+      When a publisher revises a value, the monitor stores a new observation version marked
+      <code>revised</code> that points at the version it replaced. The original is never overwritten or
+      deleted, and the snapshot for each day records exactly which version it used. Revisions are shown
+      on each indicator page and in the observation export.
+    </p>
+    <h3>Errors in this monitor</h3>
+    <p>
+      If a collector, transformation or calculation is wrong, the fix is made in code with a regression
+      test, the methodology or parser version is advanced where outputs change, and the change is
+      recorded in the public <a href="https://github.com/wilfgrainger/collapse-index/blob/main/docs/DECISIONS.md">decision log</a>
+      and <a href="https://github.com/wilfgrainger/collapse-index/blob/main/PROGRESS.md">progress record</a>.
+      Affected materialisations remain in the evidence store; corrected ones are added, never substituted silently.
+    </p>
+    <h3>Operational failures</h3>
+    <p>
+      If collection or the daily materialisation stops, the site says so: snapshots older than two days
+      are labelled stale and the health endpoints report degraded. A failing evidence store is never
+      masked with bundled data.
+    </p>
+    <h3>Reporting a problem</h3>
+    <p>
+      Report data or methodology errors as a
+      <a href="https://github.com/wilfgrainger/collapse-index/issues">GitHub issue</a> with the indicator,
+      period and what you expected. Report security vulnerabilities privately as described in
+      <a href="https://github.com/wilfgrainger/collapse-index/blob/main/SECURITY.md">SECURITY.md</a>.
+    </p>
+
+    <h2 id="versions">Version history</h2>
+    <div class="table-scroll">
+      <table>
+        <caption class="visually-hidden">Release history</caption>
+        <thead><tr><th scope="col">Release</th><th scope="col">What changed</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">0.2.1</th><td>Indicator, history, evidence and about pages; every collector validated across two real ONS releases, including a revision; overdue-release disclosure; accessibility and correctness fixes.</td></tr>
+          <tr><th scope="row">0.2</th><td>Evidence foundation: four ONS collectors with hashed, archived payloads; fixed weights without renormalisation; suppressed headline; evidence exports.</td></tr>
+          <tr><th scope="row">0.1</th><td>Methodology prototype with illustrative data, since retired.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Methodology version: <code>1.0.0-alpha.1</code>. Full plan: <a href="https://github.com/wilfgrainger/collapse-index/blob/main/ROADMAP.md">roadmap</a>.</p>
+  </main>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
+        <a href="/api/v1/openapi.json">API</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

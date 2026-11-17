@@ -19,6 +19,8 @@
 import { CollectorError, FAILURE_CLASS } from "../../shared/errors.js";
 import { FREQUENCY, parseNextRelease, parseOnsPeriod } from "../../shared/period.js";
 
+const NUMERIC_CELL = /^[-+]?(\d+(\.\d*)?|\.\d+)$/;
+
 export const PARSER_VERSION = "ons-timeseries@1.0.0";
 
 const FREQUENCY_ARRAY = Object.freeze({
@@ -128,14 +130,21 @@ export function parseOnsTimeSeries(text, expect) {
 
   for (const row of rows) {
     const rawValue = row?.value;
-    const isBlank = rawValue === "" || rawValue === null || rawValue === undefined;
+    // Whitespace-only cells are blank too: Number(" ") is 0, which would turn
+    // an empty cell into a measured zero.
+    const isBlank = rawValue === null || rawValue === undefined ||
+      (typeof rawValue === "string" && rawValue.trim() === "");
 
     if (isBlank) {
       blankCount += 1;
       continue; // never coerced to zero
     }
 
-    const value = Number(rawValue);
+    // Only plain decimal notation is a value. Number() would also accept hex,
+    // exponent or boolean forms that no ONS series publishes.
+    const value = typeof rawValue === "number" ? rawValue
+      : typeof rawValue === "string" && NUMERIC_CELL.test(rawValue.trim()) ? Number(rawValue.trim())
+      : NaN;
     if (!Number.isFinite(value)) {
       fail(FAILURE_CLASS.PARSE, `non-numeric value in ${expectedCdid} at ${row?.date}`, {
         cdid: expectedCdid,

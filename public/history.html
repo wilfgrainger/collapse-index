@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Daily materialised history of the UK Stability Monitor: measured pressure, uncertainty range and confidence, with no illustrative backcast.">
+  <meta name="theme-color" content="#08111c">
+  <title>History · UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/history.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Evidence build · alpha</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#indicators">Indicators</a>
+        <a href="/history" aria-current="page">History</a>
+        <a href="/evidence">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page" id="main">
+    <p class="eyebrow">Materialised history</p>
+    <h1>What the monitor has actually calculated</h1>
+    <p class="lede">
+      One point per civil day, from the first live ingestion onwards. Each point is a recalculation date,
+      not a new statistic: most inputs are monthly, quarterly or annual, and keep their true reference periods.
+      There is no backcast before the first ingestion.
+    </p>
+    <div class="notice" id="provenance-notice" role="status">Loading history…</div>
+
+    <figure class="chart" id="history-figure"><p>Loading chart…</p></figure>
+
+    <h2>Daily points</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Daily materialised snapshots, newest first</caption>
+        <thead><tr>
+          <th scope="col">Date</th><th scope="col">Status</th><th scope="col" class="num">Measured pressure</th>
+          <th scope="col" class="num">Range if complete</th><th scope="col" class="num">Weight available</th>
+          <th scope="col" class="num">Confidence</th><th scope="col">Methodology</th>
+        </tr></thead>
+        <tbody id="history-rows"><tr><td colspan="7">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p>
+      Download: <a href="/api/v1/exports/snapshots.csv" download>snapshots CSV</a> ·
+      <a href="/api/v1/exports/snapshots.json">JSON</a> · <a href="/api/v1/history">history API</a>
+    </p>
+  </main>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
+        <a href="/api/v1/openapi.json">API</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

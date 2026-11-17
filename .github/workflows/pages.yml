@@ -1,0 +1,52 @@
+name: Pages
+
+# Static preview of the public site on GitHub Pages. Pages cannot run the
+# public Worker, so the build freezes the Worker's bootstrap-mode responses
+# (committed ONS fixtures, labelled "frozen capture"). It is not live data.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.1"
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Build static site
+        run: >
+          node scripts/build-pages.mjs dist/pages
+          --base="${{ steps.pages.outputs.base_path }}"
+          --origin="${{ steps.pages.outputs.origin }}"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

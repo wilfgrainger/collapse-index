@@ -43,12 +43,13 @@
 - [x] implement ONS real GDP-per-head collector for `N3Y6` (annual — see D-017)
 - [x] implement ONS working-days-lost collector for `BBFW/LMS`
 - [x] version ONS population denominators where derived rates require them (`MGRZ/LMS` — see D-018)
-- [ ] archive fixtures and validate at least two releases per source — one release archived per source; the second arrives with the August ONS releases
+- [x] archive fixtures and validate at least two releases per source — `2026-07-live` and `2026-11-live`, including a real N3Y6 revision
 
 ### Remaining core indicators
 
-- [ ] implement FSA Food and You 2 food-security collector — tracked in issue #5; exact CSV resource and definition review are the first gate
-- [ ] implement NHS England RTT collector with England-only disclosure
+- [x] FSA Food and You 2 exact-source review: Wave 11 microdata reproduces FSA's published table to ten significant figures ([`source-review.md`](docs/delivery/food-insecurity/source-review.md))
+- [ ] implement FSA Food and You 2 food-security collector — issue #5; blocked on owner decisions D1–D4 in the source review (Workers plan, unit wording, breakpoints, wave registration)
+- [ ] implement NHS England RTT collector with England-only disclosure — source-access blocker: `www.england.nhs.uk` challenges automated clients (source review §7)
 - [ ] implement DWP HBAI child-poverty collector
 - [ ] implement ONS private-rental-affordability collector
 - [ ] resolve trust-series continuity and implement the approved source
@@ -63,6 +64,22 @@
 - [x] show structural baseline, acute overlay and confidence separately
 - [x] add evidence-health and suppressed-headline states
 - [x] add a public evidence download centre with non-JavaScript access
+
+## Release 0.2.1 — Site completion
+
+Delivery plan and review findings: [`docs/delivery/site-completion/plan.md`](docs/delivery/site-completion/plan.md).
+
+- [x] make the test suite independent of the wall clock
+- [x] validate every collector across two real ONS releases, including a revision
+- [x] disclose overdue source releases on evidence health without changing scoring
+- [x] fix CSP-blocked page styles, contrast, small text and touch targets
+- [x] report a failed evidence-health read as degraded, never as an empty store
+- [x] human pages for every indicator, history, evidence health, and about/corrections
+- [x] derive homepage coverage copy from the API rather than hard-coding it
+- [x] serve `robots.txt` and `sitemap.xml` with absolute, request-origin URLs
+- [ ] server-render the current evidence state for no-JavaScript readers (S2)
+- [x] fix independent backend-review defects R5–R14 (ETag staleness, whitespace-as-zero, atomic snapshot lineage, crashed runs, empty-store caching, period regression, OpenAPI)
+- [ ] decide how to upgrade any populated v0.2 database, given migration 0003's foreign-key behaviour inside D1 transactions (R4)
 
 ## Release 0.3 — Reproducible history and robustness
 

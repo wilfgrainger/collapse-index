@@ -32,10 +32,13 @@ function createAssets() {
 }
 
 async function ingestedEnv() {
-  const env = { DB: await createTestDatabase(), EVIDENCE: createTestBucket(), ASSETS: createAssets() };
+  // Pin the read clock to the ingestion day: without it, health checks age the
+  // snapshot against the wall clock and the suite starts failing two days later.
+  const now = "2026-08-01T09:00:00.000Z";
+  const env = { DB: await createTestDatabase(), EVIDENCE: createTestBucket(), ASSETS: createAssets(), CLOCK_NOW: now };
   await runIngestion(env, {
     trigger: "test",
-    now: "2026-08-01T09:00:00.000Z",
+    now,
     fetchImpl: createFixtureFetch(await fixturesByUrl())
   });
   return env;

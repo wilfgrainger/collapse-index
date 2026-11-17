@@ -6,7 +6,7 @@ The working project name is **UK Collapse Index**. The public product is deliber
 
 ## Current status
 
-**Version 0.2 — evidence foundation. There is no published headline score, by design.**
+**Version 0.2.1 — site completion. There is no published headline score, by design.**
 
 Four of the ten indicators have working collectors, covering 40% of fixed weight. Publication requires 90% availability and 70% confidence, so the headline is suppressed and the site reports what has been measured, what is missing, and the range a complete score could occupy.
 
@@ -16,16 +16,17 @@ Four of the ten indicators have working collectors, covering 40% of fixed weight
 | Fixed weight available | 40% |
 | Evidence confidence | 38% |
 | Publication status | **suppressed** |
-| Measured pressure | 9.5 points (range 9.5–69.5) |
+| Measured pressure | 10.3 points (range 10.3–70.3) at the 2026-11 capture |
+| Collector maturity | every source validated across two real ONS releases, including a revision |
 
 ### Collected sources
 
-| Series | Indicator | Frequency | Fixture value |
-|---|---|---|---|
-| ONS `D7G7/MM23` | CPI inflation | monthly | 2.6% (2026 JUN) |
-| ONS `MGSX/LMS` | Labour-market stress | rolling quarter | 4.9% (2026 MAR–MAY) |
-| ONS `N3Y6/QNA` | GDP per capita growth | annual | +1.0% (2025) |
-| ONS `BBFW/LMS` ÷ `MGRZ/LMS` | Industrial disruption | monthly | 0.75 days lost per 1,000 employed |
+| Series | Indicator | Frequency | 2026-07 capture | 2026-11 capture |
+|---|---|---|---|---|
+| ONS `D7G7/MM23` | CPI inflation | monthly | 2.6% (2026 JUN) | 3.5% (2026 SEP) |
+| ONS `MGSX/LMS` | Labour-market stress | rolling quarter | 4.9% (2026 MAR–MAY) | 4.7% (2026 JUN–AUG) |
+| ONS `N3Y6/QNA` | GDP per capita growth | annual | +1.0% (2025) | +0.9% (2025, **revised**) |
+| ONS `BBFW/LMS` ÷ `MGRZ/LMS` | Industrial disruption | monthly | 0.75 days lost per 1,000 employed | 0.67 (2026 AUG) |
 
 Six indicators — child poverty, housing stress, food insecurity, trust in government, healthcare strain and environmental disruption — have no collector. They retain 60% of the fixed weight rather than being filled with placeholders.
 
@@ -63,6 +64,29 @@ Evidence objects remain deduplicated when upstream bytes do not change. Daily sn
 Derived observations use a dependency fingerprint containing every payload that can alter the result. For industrial disruption, that includes both the BBFW numerator and MGRZ employment denominator.
 
 The public Worker never writes. A bound but unreadable D1 database returns a degraded response rather than silently falling back to fixtures. A materialisation more than two days old is explicitly marked stale and causes the health endpoints to report degraded status.
+
+## Website
+
+Static pages with no framework and no build step. Each one renders from the read-only API and states its operational status (live, stale, bootstrap or degraded):
+
+- `/` — dashboard with publication status, range, domains, top drivers, all ten indicators, collector health and downloads;
+- `/indicator?id=…` — one indicator: source, evidence hashes, denominator, period, freshness, scoring curve and every stored observation version;
+- `/history` — daily materialisations the system actually calculated; no backcast and no illustrative line;
+- `/evidence` — publication gates, domain coverage, collectors with the release calendar and overdue releases, indicator freshness and recent runs;
+- `/methodology` — the full method, with live gate values;
+- `/about` — what the monitor does and does not mean, FAQ, corrections and revision policy, and version history.
+
+`robots.txt` and `sitemap.xml` are served by the Worker with absolute request-origin URLs. The shared header and footer are kept identical by `node scripts/sync-chrome.mjs`; the test suite fails if a page drifts. Pages contain no inline styles or scripts, so the site's strict CSP holds.
+
+### Static preview on GitHub Pages
+
+`.github/workflows/pages.yml` publishes a static preview on every push to `main`, at `https://wilfgrainger.github.io/collapse-index/`.
+
+Pages cannot run the public Worker. `scripts/build-pages.mjs` therefore runs the real Worker once in explicit bootstrap mode and freezes each read-only API response into a file. It also rewrites root-relative links for the `/collapse-index` base path.
+
+The preview shows the committed ONS fixture capture, labelled **frozen capture** on every page. Its history and canonical observation and snapshot exports are empty or unavailable, exactly as in bootstrap mode. It is not live data and not the production deployment.
+
+Build it locally with `npm run build:pages`; the output goes to `dist/pages/`.
 
 ## Downloadable evidence
 
@@ -111,7 +135,9 @@ npm run deploy:ingest
 npm run deploy:web
 ```
 
-Migrations are forward-only. `0002_evidence_model.sql` remains immutable; `0003_review_correctness.sql` upgrades populated v0.2 databases while preserving observation, snapshot and ingestion-run lineage.
+Migrations are forward-only and applied migrations are immutable. A **fresh** installation applies every migration under D1's transactional conditions, and a test enforces this.
+
+> **Known limitation (R4):** `0003_review_correctness.sql` uses `PRAGMA foreign_keys = OFF`, which has no effect inside a D1 migration transaction. It therefore cannot upgrade a *populated* v0.2 database. No such database is known to exist. If one does, upgrade it with a new forward migration that uses `PRAGMA defer_foreign_keys = true`. See `docs/delivery/site-completion/plan.md`.
 
 Smoke-test `/api/v1/health`, `/api/v1/evidence-health`, `/api/v1/current`, `/api/v1/exports/manifest.json` and a static asset after deployment.
 
@@ -125,7 +151,7 @@ All routes are read-only and support `GET` and `HEAD`.
 - `GET /api/v1/index` — deprecated compatibility alias for `/api/v1/current`.
 - `GET /api/v1/history` — one latest materialisation per civil day.
 - `GET /api/v1/indicators/:id` — definition, current state and observation history.
-- `GET /api/v1/evidence-health` — collector health, freshness, releases and recent runs.
+- `GET /api/v1/evidence-health` — collector health, freshness, releases (including `releaseOverdue`) and recent runs.
 - `GET /api/v1/methodology` — weights, curves, rationale, gates and levels.
 - `GET /api/v1/sources` — exact series identifiers, licences, coverage and gaps.
 - `GET /api/v1/health` — binding, snapshot-age and latest-ingestion health.
@@ -151,7 +177,7 @@ src/web/                  public Worker, read-only API and export serialisation
 src/shared/               hashing, periods and typed errors
 fixtures/ons/             unmodified ONS payloads used by contract tests
 migrations/               forward-only D1 schema changes
-public/                   dashboard, downloads and methodology website
+public/                   static website: dashboard, indicator, history, evidence, methodology, about
 test/{unit,contract,integration}/
 docs/                     methodology, platform, delivery and decision records
 ```

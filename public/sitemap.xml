@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Replace the host below with the deployed workers.dev subdomain or custom domain. -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://collapse-index-web.workers.dev/</loc></url>
-  <url><loc>https://collapse-index-web.workers.dev/methodology.html</loc></url>
-</urlset>

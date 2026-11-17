@@ -246,14 +246,18 @@ export async function writeSnapshot(env, snapshot, observationIdByIndicator = ne
   const state = snapshotStateFingerprint(snapshot);
   const asOfDate = snapshot.asOf.slice(0, 10);
 
-  const result = await env.DB.prepare(`
-    INSERT INTO snapshots (
+  // One D1 batch is one transaction: the snapshot row and every component row
+  // commit together or not at all, so a failed component insert can never
+  // leave a snapshot without lineage. INSERT OR IGNORE makes a concurrent
+  // same-state run harmless, and re-running completes a partial legacy row.
+  const snapshotKey = "(SELECT id FROM snapshots WHERE as_of_date = ?10 AND methodology_version = ?11 AND state_fingerprint = ?12)";
+  const insertSnapshot = env.DB.prepare(`
+    INSERT OR IGNORE INTO snapshots (
       as_of_date, methodology_version, publication_status, headline_score, level_id,
       observed_pressure, available_weight, missing_weight, range_low, range_high,
       acute_overlay, confidence, evidence_fingerprint, state_fingerprint,
       payload_json, generated_at
     ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16)
-    RETURNING id
   `).bind(
     asOfDate, snapshot.methodologyVersion, snapshot.publication.status,
     snapshot.publication.headlineScore, snapshot.publication.level?.id ?? null,
@@ -261,27 +265,28 @@ export async function writeSnapshot(env, snapshot, observationIdByIndicator = ne
     snapshot.structural.missingWeight, snapshot.structural.range.low, snapshot.structural.range.high,
     snapshot.acute.overlay, snapshot.confidence.score, evidence, state,
     JSON.stringify(snapshot), snapshot.generatedAt
-  ).first();
-
-  const snapshotId = result?.id;
-  if (!snapshotId) return { snapshotId: null, fingerprint: evidence, stateFingerprint: state };
+  );
 
   const components = snapshot.indicators.map((indicator) =>
     env.DB.prepare(`
-      INSERT INTO snapshot_components (
+      INSERT OR IGNORE INTO snapshot_components (
         snapshot_id, indicator_id, observation_id, dependency_fingerprint, weight, pressure,
         contribution, confidence_contribution, available, unavailable_reason
-      ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
+      ) VALUES (${snapshotKey},?1,?2,?3,?4,?5,?6,?7,?8,?9)
     `).bind(
-      snapshotId, indicator.id, observationIdByIndicator.get(indicator.id) ?? null,
+      indicator.id, observationIdByIndicator.get(indicator.id) ?? null,
       indicator.source?.dependencyFingerprint ?? null,
       indicator.weight, indicator.pressure, indicator.contribution,
-      indicator.confidenceContribution, indicator.available ? 1 : 0, indicator.reason ?? null
+      indicator.confidenceContribution, indicator.available ? 1 : 0, indicator.reason ?? null,
+      asOfDate, snapshot.methodologyVersion, state
     )
   );
-  await env.DB.batch(components);
 
-  return { snapshotId, fingerprint: evidence, stateFingerprint: state };
+  const results = await env.DB.batch([insertSnapshot, ...components]);
+  const created = (results?.[0]?.meta?.changes ?? 0) > 0;
+  const snapshotId = await snapshotExistsForState(env, asOfDate, snapshot.methodologyVersion, state);
+
+  return { snapshotId, created, fingerprint: evidence, stateFingerprint: state };
 }
 
 export async function snapshotHistory(env, limit = 365) {

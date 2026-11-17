@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A transparent UK systemic-pressure monitor built from official statistics, with every source, hash and gap on show.">
   <meta name="theme-color" content="#08111c">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="UK Stability Monitor">
+  <meta property="og:description" content="Observable systemic pressure on the UK from official statistics, with every source, hash and gap on show. Pressure, not prophecy.">
+  <meta name="twitter:card" content="summary">
   <title>UK Stability Monitor</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -25,11 +29,12 @@
         </span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#indicators">Indicators</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#downloads">Downloads</a>
-        <a href="/methodology.html">Methodology</a>
-        <a href="/api/v1/current">API</a>
+        <a href="/#indicators">Indicators</a>
+        <a href="/history">History</a>
+        <a href="/evidence">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
       </nav>
     </div>
   </header>
@@ -41,9 +46,8 @@
         <h1 id="hero-title">There is no headline score yet.</h1>
         <p class="lede">
           This monitor measures pressure on the UK's economic, household, institutional, public-service
-          and environmental systems. Four of its ten indicators are collected from official statistics.
-          The other six are not, so no headline is published — showing one would imply a completeness
-          that does not exist.
+          and environmental systems. <span id="hero-coverage">Coverage and publication gates load from the
+          evidence store.</span>
         </p>
         <div class="notice" id="provenance-notice" role="status">Loading the current evidence state…</div>
       </div>
@@ -97,6 +101,21 @@
       </div>
     </section>
 
+    <section class="section shell overview-grid" aria-labelledby="domains-title">
+      <article class="method-card">
+        <p class="eyebrow">Five domains</p>
+        <h2 id="domains-title">Where measurement exists</h2>
+        <ul class="domain-list" id="domain-list"><li>Loading…</li></ul>
+      </article>
+      <article class="method-card">
+        <p class="eyebrow">Largest measured contributions</p>
+        <h2>Top drivers</h2>
+        <p class="description">Ranked by weighted contribution among collected indicators only. Uncollected indicators cannot be ranked.</p>
+        <ol class="driver-list" id="driver-list"><li>Loading…</li></ol>
+        <a class="button" href="/history">See daily history</a>
+      </article>
+    </section>
+
     <section class="section shell" id="indicators" aria-labelledby="indicators-title">
       <div class="section-heading">
         <div>
@@ -108,7 +127,7 @@
           coverage and confidence; it never hands its weight to the others.
         </p>
       </div>
-      <div class="indicator-grid" id="indicator-grid" aria-live="polite">
+      <div class="indicator-grid" id="indicator-grid" aria-busy="true">
         <p class="loading">Loading indicators…</p>
       </div>
     </section>
@@ -123,6 +142,7 @@
           <p>
             Each collector asserts the exact ONS series identifier before it will write anything, archives
             the payload it parsed, and records the SHA-256 of those bytes against the observation.
+            <a class="inline-link" href="/evidence">Full evidence health →</a>
           </p>
         </div>
 
@@ -220,17 +240,17 @@
           <li>An observation cannot exist without the hash of the bytes it came from.</li>
           <li>Rolling three-month estimates are stored with their true reference period.</li>
           <li>England-only evidence carries a population factor and cannot pass as UK-wide.</li>
-          <li>Publication gates are public: 90% of fixed weight and 70% confidence.</li>
+          <li id="guardrail-gates">Publication gates are public and versioned with the methodology.</li>
         </ul>
-        <a class="button" href="/methodology.html">Read the methodology</a>
+        <a class="button" href="/methodology">Read the methodology</a>
       </article>
 
       <article class="gaps-card">
         <p class="eyebrow">Not yet collected</p>
-        <h2>The six missing indicators</h2>
+        <h2 id="gaps-title">The missing indicators</h2>
         <p class="description">
-          These hold 60% of the fixed weight between them. Each is blocked on a definitional decision, not
-          on engineering — which is why none has been filled with a placeholder.
+          <span id="gaps-weight"></span> Each is blocked on a definitional decision, not on engineering —
+          which is why none has been filled with a placeholder.
         </p>
         <ul id="gap-list"><li>Loading…</li></ul>
       </article>
@@ -248,11 +268,12 @@
         </p>
       </div>
       <div class="footer-links">
-        <a href="/methodology.html">Methodology</a>
-        <a href="/api/v1/evidence-health">Evidence health</a>
-        <a href="/api/v1/sources">Sources</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
         <a href="/api/v1/exports/manifest.json">Download data</a>
-        <a href="/api/v1/openapi.json">OpenAPI</a>
+        <a href="/api/v1/openapi.json">API</a>
         <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
       </div>
     </div>
@@ -267,6 +288,7 @@
         <li><a href="/api/v1/exports/current.csv">Current CSV</a> — the same ten-indicator snapshot in tabular form</li>
         <li><a href="/api/v1/exports/manifest.json">Export manifest</a> — scope, limitations and all download links</li>
         <li><a href="/api/v1/evidence-health">Evidence health</a> — collector health and freshness</li>
+        <li><a href="/methodology">Methodology page</a> and <a href="/about">about and corrections policy</a> — readable without JavaScript</li>
         <li><a href="/api/v1/sources">Sources</a> — exact series identifiers and licences</li>
         <li><a href="/api/v1/methodology">Methodology</a> — weights, curves and rationale</li>
       </ul>

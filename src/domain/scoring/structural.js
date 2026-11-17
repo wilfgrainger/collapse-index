@@ -108,15 +108,18 @@ export function scoreIndicator(definition, observation, source, asOf) {
   const quality = qualityFactor(source.qualityClass);
   const coverage = coverageFactor(observation.geography);
   const confidenceContribution = definition.weight * quality * freshness.factor * coverage;
+  const expired = freshness.stage === FRESHNESS.EXPIRED;
 
   return {
     ...base,
-    available: freshness.stage !== FRESHNESS.EXPIRED,
-    reason: freshness.stage === FRESHNESS.EXPIRED ? freshness.reason : null,
+    available: !expired,
+    reason: expired ? freshness.reason : null,
     value: round(value, 3),
     rawValue: observation.rawValue,
     pressure: round(pressure, 1),
-    contribution: round(definition.weight * pressure, 2),
+    // An expired indicator is excluded from observedPressure, so its published
+    // per-indicator contribution must be zero too (D-024).
+    contribution: expired ? 0 : round(definition.weight * pressure, 2),
     confidenceContribution: round(confidenceContribution, 4),
     factors: {
       quality: round(quality, 3),

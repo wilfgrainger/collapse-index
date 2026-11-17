@@ -113,9 +113,17 @@ export async function createTestDatabase({ through = null } = {}) {
     prepare(sql) {
       return new TestStatement(db, sql);
     },
+    // D1 runs a batch as a single transaction: all statements commit or none do.
     async batch(statements) {
       const results = [];
-      for (const statement of statements) results.push(await statement.run());
+      db.exec("BEGIN");
+      try {
+        for (const statement of statements) results.push(await statement.run());
+        db.exec("COMMIT");
+      } catch (error) {
+        db.exec("ROLLBACK");
+        throw error;
+      }
       return results;
     }
   };

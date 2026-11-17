@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Definition, current evidence, scoring curve and every stored observation version for one UK Stability Monitor indicator.">
+  <meta name="theme-color" content="#08111c">
+  <title>Indicator · UK Stability Monitor</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/indicator.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="UK Stability Monitor home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>
+          <strong>UK Stability Monitor</strong>
+          <small>Evidence build · alpha</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#indicators">Indicators</a>
+        <a href="/history">History</a>
+        <a href="/evidence">Evidence</a>
+        <a href="/#downloads">Downloads</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/about">About</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page" id="main">
+    <p class="breadcrumb"><a href="/#indicators">Indicators</a> / <span id="crumb-title">Indicator</span></p>
+    <p class="eyebrow" id="indicator-domain">Indicator</p>
+    <h1 id="indicator-title">Loading indicator…</h1>
+    <p class="lede" id="indicator-lede"></p>
+    <div class="notice" id="provenance-notice" role="status">Loading the current evidence state…</div>
+
+    <dl class="fact-grid" id="indicator-facts"></dl>
+
+    <h2>Source and evidence</h2>
+    <dl class="detail-list" id="source-list"></dl>
+
+    <h2>Period and freshness</h2>
+    <dl class="detail-list" id="freshness-list"></dl>
+
+    <h2>Scoring curve</h2>
+    <p id="curve-rationale"></p>
+    <figure class="chart" id="curve-figure"><p>Loading curve…</p></figure>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Scoring curve breakpoints</caption>
+        <thead><tr><th scope="col" class="num">Raw value</th><th scope="col" class="num">Pressure</th><th scope="col">Meaning</th></tr></thead>
+        <tbody id="breakpoint-rows"><tr><td colspan="3">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <h2>Observation versions</h2>
+    <p>
+      Every stored version, newest first. A revision adds a row and keeps what it replaced; nothing is
+      overwritten. Daily recalculation never creates a row here — only a new or revised source release does.
+    </p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="visually-hidden">Stored observation versions for this indicator</caption>
+        <thead><tr><th scope="col">Period</th><th scope="col" class="num">Value</th><th scope="col">Published</th><th scope="col">State</th><th scope="col">Evidence hash</th><th scope="col">Denominator</th></tr></thead>
+        <tbody id="history-rows"><tr><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <noscript><p>This page renders with JavaScript. The same data is at <code>/api/v1/indicators/{id}</code>.</p></noscript>
+  </main>
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <strong>UK Stability Monitor</strong>
+        <p>
+          An open methodology experiment in public-interest data communication. This measures pressure;
+          it does not predict state failure. Contains public sector information licensed under the Open
+          Government Licence v3.0.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/methodology">Methodology</a>
+        <a href="/evidence">Evidence health</a>
+        <a href="/history">History</a>
+        <a href="/about#corrections">Corrections policy</a>
+        <a href="/api/v1/exports/manifest.json">Download data</a>
+        <a href="/api/v1/openapi.json">API</a>
+        <a href="https://github.com/wilfgrainger/collapse-index">Source code</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

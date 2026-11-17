@@ -82,7 +82,10 @@ frequency, reference periods and publication timestamps, licence, archived
 payload with SHA-256, collector and parser version, fixtures from real
 responses, blank-versus-zero handling, and declared failure behaviour.
 
-Outstanding: **validation across at least two published releases.** One release
-is archived per source. The next ONS releases (13, 18 and 19 August 2026) will
-provide the second, including a revision path for `N3Y6`. Collector maturity is
-tracked as `releasesObserved` on `/api/v1/evidence-health` (D-023).
+Met on 2026-11-16: **validation across at least two published releases.** The
+`2026-11-live` capture is the second unmodified release for all five series. ONS
+revised `N3Y6` 2025 from 1.0 to 0.9 between the captures. The ingestion path
+stores that as a `revised` version that supersedes the original, and
+`test/integration/second-release.test.js` pins it. Collector maturity is tracked
+as `releasesObserved` on `/api/v1/evidence-health` (D-023). Overdue releases are
+disclosed as `releaseOverdue` (D-026).

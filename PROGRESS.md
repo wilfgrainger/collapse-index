@@ -216,3 +216,62 @@ PR #3 corrects the evidence/runtime boundary issues found after PR #2 merged. Th
 ### Remaining external verification
 
 Live ONS collection still requires confirmation after deployment to real Cloudflare resources. The repository now fails visibly and safely if that collection or the daily materialisation stops.
+
+## 2026-11-16 — 0.2.1 site completion
+
+Full review of the site and backend. Findings, roadmap and delivery plan: `docs/delivery/site-completion/plan.md`.
+
+### Fixed
+
+- `main` had been failing since 2026-08-03. A health test read the wall clock against an August snapshot. All integration suites now pin their read clock.
+- Every collector is validated across two real ONS releases (`2026-11-live`), including a genuine upstream revision of N3Y6.
+- Independent backend review (R5–R14):
+  - the ETag now tracks staleness;
+  - whitespace cells are never read as zero;
+  - snapshots and their components commit atomically;
+  - crashed runs are marked failed and degrade health;
+  - expired indicators publish zero contribution (D-024);
+  - an older latest period is quarantined (D-025);
+  - an empty bound store returns `503` on history and the manifest;
+  - the OpenAPI document is valid;
+  - weak ETags are compared correctly, 405 responses carry `Allow`, and impossible release dates are rejected.
+- Website:
+  - the CSP was blocking methodology and 404 styles;
+  - a degraded evidence-health read was shown as an empty store;
+  - contrast and small text failed AA;
+  - touch targets were under 44px;
+  - there was no mobile navigation;
+  - homepage copy was hard-coded.
+
+### Built
+
+- Indicator, history, evidence-health and about/corrections pages on the existing read-only API.
+- Domain coverage and top drivers on the dashboard.
+- Overdue-release disclosure (D-026).
+- Origin-aware `robots.txt` and `sitemap.xml`.
+- Clean URLs.
+
+### Verified
+
+- `npm run check`: syntax, **164 tests**, and both Worker dry-run bundles (web 61.6 KiB / 16.5 KiB gzip, ingest 86.6 KiB / 22.4 KiB gzip).
+- Every page rendered in Chromium at 1440px and 390px in two setups: a populated evidence store, and `wrangler dev` with an unmigrated D1. Results:
+  - no console or CSP errors;
+  - no horizontal scroll;
+  - degraded state disclosed, with no fixture fallback.
+
+### Open
+
+- R4: migration 0003 cannot upgrade a *populated* v0.2 database inside a D1 transaction. A fresh install is unaffected and tested. This needs an owner decision before any populated database is upgraded.
+- S2: server-render the evidence state for readers without JavaScript.
+- Live ONS collection on real Cloudflare resources is still to be confirmed after first deployment.
+- Next collectors, in order: NHS RTT (15%, needed for the 90% gate), FSA food insecurity, HBAI, rental affordability, trust, environment.
+
+## 2026-11-16 — Food insecurity exact-source review (issue #5)
+
+- Identified the exact FSA Food and You 2 Wave 11 resources, with licence, fieldwork period, sizes and SHA-256 hashes.
+- Recomputed the weighted low-plus-very-low food-security share from the respondent-level CSV: E, W and NI 21.2039031324%. FSA's published table T231 gives 21.2039031324445%. England, Wales and Northern Ireland match to the same precision.
+- Found that the v1 unit wording ("% of households") does not match FSA's individual-level measure.
+- Found that the provisional breakpoints would score the current level at about 87/100.
+- Measured a CSV parse at 50–70 ms CPU, which exceeds the Workers Free per-invocation limit.
+- NHS RTT: `www.england.nhs.uk` returns an empty 202 challenge to automated clients. That is a source-access blocker, and it was not circumvented.
+- No collector, no scoring change and no committed fixture yet. Owner decisions D1–D4 are listed in `docs/delivery/food-insecurity/source-review.md`.

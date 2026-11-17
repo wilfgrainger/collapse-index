@@ -13,6 +13,8 @@ async function createEnv() {
 }
 
 async function ingest(env, now, fetchImpl) {
+  // Reads follow the latest ingestion day unless a test sets CLOCK_NOW later.
+  env.CLOCK_NOW ??= now;
   return runIngestion(env, { trigger: "regression", now, fetchImpl });
 }
 
